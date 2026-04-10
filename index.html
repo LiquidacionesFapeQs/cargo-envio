@@ -3,121 +3,179 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>OLT - Cargos</title>
+    <title>Sistema de Control OLT</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        .custom-scroll::-webkit-scrollbar { width: 6px; }
+        .custom-scroll::-webkit-scrollbar-track { background: #f1f1f1; }
+        .custom-scroll::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
+        .loader { border-top-color: #ffffff; animation: spinner 0.6s linear infinite; }
+        @keyframes spinner { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+    </style>
 </head>
-<body class="bg-slate-50 p-6 lg:p-16 font-sans">
+<body class="bg-slate-50 min-h-screen font-sans text-slate-900">
 
-    <div id="loginPage" class="max-w-md mx-auto mt-20 bg-white p-12 rounded-[3rem] shadow-2xl border-t-[12px] border-indigo-600">
-        <h2 class="text-4xl font-black text-center mb-10 text-slate-800 tracking-tighter">ACCESO DNI</h2>
-        <input type="number" id="dni" placeholder="Tu DNI" class="w-full p-6 border-4 border-slate-50 rounded-3xl mb-8 text-center text-4xl font-black focus:border-indigo-500 outline-none transition-all">
-        <button onclick="login()" id="btnLogin" class="w-full bg-indigo-600 text-white py-6 rounded-3xl font-black text-2xl shadow-2xl hover:bg-indigo-700 active:scale-90 transition-all">ENTRAR</button>
+    <div id="loginPage" class="flex items-center justify-center min-h-screen p-6">
+        <div class="bg-white p-8 rounded-2xl shadow-xl w-full max-w-sm border border-slate-200">
+            <h2 class="text-xl font-bold text-center mb-6">Acceso al Sistema</h2>
+            <input type="number" id="dni" placeholder="DNI" class="w-full p-3 border rounded-xl mb-4 text-center text-lg outline-none focus:ring-2 focus:ring-indigo-500">
+            <button onclick="login()" id="btnLogin" class="w-full bg-indigo-600 text-white py-3 rounded-xl font-bold hover:bg-indigo-700 transition-all">ENTRAR</button>
+        </div>
     </div>
 
-    <div id="appPage" class="hidden max-w-2xl mx-auto space-y-8">
-        <div class="bg-white p-8 rounded-[2rem] shadow-sm flex justify-between items-center border-l-8 border-indigo-500">
-            <div class="truncate">
-                <p class="text-[10px] font-black text-indigo-400 uppercase tracking-[0.2em]">Responsable</p>
-                <span id="uName" class="text-3xl font-black text-slate-800 truncate"></span>
+    <div id="appPage" class="hidden h-screen flex flex-col">
+        <header class="bg-white border-b px-6 py-3 flex justify-between items-center shadow-sm">
+            <div class="flex items-center gap-4">
+                <span class="bg-indigo-600 text-white px-3 py-1 rounded-md text-xs font-bold">OLT</span>
+                <h1 id="uName" class="font-bold text-slate-700">---</h1>
             </div>
-            <button onclick="location.reload()" class="bg-slate-100 px-6 py-4 rounded-2xl text-slate-400 font-black text-sm uppercase">Salir</button>
-        </div>
+            <button onclick="location.reload()" class="text-slate-400 hover:text-red-500 text-sm font-medium">Cerrar Sesión</button>
+        </header>
 
-        <div class="bg-white p-10 rounded-[2.5rem] shadow-2xl space-y-10">
-            <div>
-                <label class="block text-xs font-black text-slate-400 mb-4 uppercase tracking-widest">Motivo del Cargo (Aux Col A)</label>
-                <select id="motivo" class="w-full p-6 bg-slate-50 rounded-3xl font-black text-3xl text-slate-700 border-4 border-transparent focus:border-indigo-500 outline-none appearance-none cursor-pointer">
-                    <option>Cargando...</option>
-                </select>
+        <main class="flex flex-1 overflow-hidden">
+            <div class="w-1/3 p-6 border-r bg-white overflow-y-auto">
+                <h3 class="text-sm font-bold text-slate-400 uppercase tracking-wider mb-6">Generar Nuevo Cargo</h3>
+                
+                <div class="space-y-5">
+                    <div>
+                        <label class="block text-xs font-bold mb-2 text-slate-600">Motivo (Aux A)</label>
+                        <select id="motivo" class="w-full p-2.5 bg-slate-50 border rounded-lg text-sm font-medium outline-none focus:border-indigo-500">
+                            <option>Cargando...</option>
+                        </select>
+                    </div>
+
+                    <div>
+                        <label class="block text-xs font-bold mb-2 text-slate-600">Detalle Adicional (Col E)</label>
+                        <textarea id="detalle" rows="3" placeholder="Información extra..." class="w-full p-2.5 bg-slate-50 border rounded-lg text-sm outline-none focus:border-indigo-500 resize-none"></textarea>
+                    </div>
+
+                    <button onclick="generar()" id="btnG" class="w-full bg-emerald-600 text-white py-3 rounded-xl font-bold text-sm hover:bg-emerald-700 shadow-md active:scale-95 transition-all flex items-center justify-center gap-2">
+                        <span>GENERAR CARGO</span>
+                        <div id="btnLoader" class="loader rounded-full border-2 border-t-2 border-white h-4 w-4 hidden"></div>
+                    </button>
+
+                    <div id="resCard" class="hidden bg-amber-50 border border-amber-200 p-4 rounded-xl space-y-3">
+                        <div class="flex justify-between items-start">
+                            <div>
+                                <p class="text-[10px] font-bold text-amber-600 uppercase">Cargo Generado</p>
+                                <p id="newId" class="text-lg font-black text-amber-900"></p>
+                            </div>
+                            <button onclick="copiar()" class="bg-amber-600 text-white px-4 py-2 rounded-lg text-xs font-bold hover:bg-amber-700">COPIAR</button>
+                        </div>
+                    </div>
+                </div>
             </div>
 
-            <div>
-                <label class="block text-xs font-black text-slate-400 mb-4 uppercase tracking-widest">Detalle Adicional (Historial Col E)</label>
-                <input type="text" id="detalle" placeholder="Nota opcional..." class="w-full p-6 bg-slate-50 rounded-3xl text-3xl font-bold outline-none focus:ring-8 focus:ring-indigo-500/5">
+            <div class="w-2/3 bg-slate-50 p-6 overflow-hidden flex flex-col">
+                <h3 class="text-sm font-bold text-slate-400 uppercase tracking-wider mb-6">Mi Historial Reciente</h3>
+                
+                <div class="bg-white border rounded-xl flex-1 overflow-hidden flex flex-col">
+                    <div class="overflow-x-auto custom-scroll">
+                        <table class="w-full text-left border-collapse">
+                            <thead class="bg-slate-50 sticky top-0 border-b">
+                                <tr>
+                                    <th class="p-3 text-[10px] font-bold text-slate-500 uppercase">N° Cargo</th>
+                                    <th class="p-3 text-[10px] font-bold text-slate-500 uppercase">Fecha</th>
+                                    <th class="p-3 text-[10px] font-bold text-slate-500 uppercase">Motivo</th>
+                                    <th class="p-3 text-[10px] font-bold text-slate-500 uppercase">Detalle</th>
+                                    <th class="p-3 text-[10px] font-bold text-slate-500 uppercase text-right">Cuenta</th>
+                                </tr>
+                            </thead>
+                            <tbody id="histTable" class="text-xs divide-y">
+                                </tbody>
+                        </table>
+                    </div>
+                    <div id="noData" class="hidden p-10 text-center text-slate-400 text-sm">No hay registros hoy.</div>
+                </div>
             </div>
-
-            <button onclick="generar()" id="btnG" class="w-full bg-emerald-500 text-white py-10 rounded-[2rem] font-black text-4xl shadow-2xl shadow-emerald-200 active:scale-95 transition-all">
-                GENERAR CARGO
-            </button>
-        </div>
-
-        <div id="resCard" class="hidden bg-amber-400 p-8 rounded-[2.5rem] shadow-2xl flex justify-between items-center border-4 border-white animate-bounce">
-            <div class="truncate">
-                <p class="text-[10px] font-black uppercase text-amber-900 mb-2">Listo para Excel (ID + TAB + Fecha):</p>
-                <p id="newId" class="text-4xl font-black text-amber-950 tracking-tighter"></p>
-            </div>
-            <button onclick="copiar()" class="bg-amber-950 text-white px-12 py-6 rounded-3xl font-black text-2xl hover:bg-black transition-all">COPIAR</button>
-        </div>
+        </main>
     </div>
 
     <script>
-        const API = "https://script.google.com/macros/s/AKfycbzrhC3hJ1_nUCo-u68RiH9s_f3SBDNBj_vlci1DWHvnxWXeNyaReo4gEO44oonIwFqz/exec"; 
-        const TOKEN = "Cargos-v0410";
-        let userName = "";
-        let motivosData = []; 
+        const API = "https://script.google.com/macros/s/AKfycbwLiusbmJz_zpYOI987X6GxqABYA9MEwljIwTV3O41TOnI2xRZCrMTwN-gNe2SxdZu7/exec"; 
+        const TOKEN = "generarcargo-0410";
+        let user = { nombre: "" };
+        let motivosData = [];
 
         async function login() {
             const dni = document.getElementById('dni').value;
-            const btn = document.getElementById('btnLogin');
-            btn.innerText = "ESPERA...";
-            
-            try {
-                const res = await fetch(API, {method:'POST', body: JSON.stringify({action:'login', dni:dni, token:TOKEN})});
-                const data = await res.json();
-                if(data.status === 'success') {
-                    userName = data.nombre;
-                    mostrar();
-                } else { alert("DNI NO REGISTRADO"); btn.innerText = "ENTRAR"; }
-            } catch(e) { alert("Error de red"); btn.innerText = "ENTRAR"; }
+            if(!dni) return;
+            const res = await fetch(API, {method:'POST', body: JSON.stringify({action:'login', dni:dni, token:TOKEN})});
+            const data = await res.json();
+            if(data.status === 'success') {
+                user.nombre = data.nombre;
+                mostrarApp();
+            } else { alert("DNI no registrado"); }
         }
 
-        async function mostrar() {
+        async function mostrarApp() {
             document.getElementById('loginPage').classList.add('hidden');
             document.getElementById('appPage').classList.remove('hidden');
-            document.getElementById('uName').innerText = userName;
+            document.getElementById('uName').innerText = user.nombre;
             
-            // Cargar Motivos (Col A) y sus Datos Asociados (Col B)
+            // Cargar Motivos
             const res = await fetch(API, {method:'POST', body: JSON.stringify({action:'getMotivos', token:TOKEN})});
             const data = await res.json();
             motivosData = data.lista;
+            document.getElementById('motivo').innerHTML = motivosData.map(m => `<option value="${m.motivo}">${m.motivo}</option>`).join('');
             
-            const select = document.getElementById('motivo');
-            select.innerHTML = motivosData.map(m => `<option value="${m.motivo}">${m.motivo}</option>`).join('');
+            cargarHistorial();
         }
 
         async function generar() {
             const btn = document.getElementById('btnG');
+            const loader = document.getElementById('btnLoader');
             const motivoSel = document.getElementById('motivo').value;
-            const infoMotivo = motivosData.find(m => m.motivo === motivoSel);
-            
-            btn.disabled = true; btn.innerText = "REGISTRANDO...";
-            
-            const payload = {
+            const info = motivosData.find(m => m.motivo === motivoSel);
+
+            btn.disabled = true; loader.classList.remove('hidden');
+
+            const res = await fetch(API, {method:'POST', body: JSON.stringify({
                 action: 'registrar',
                 token: TOKEN,
-                nombre: userName,
+                nombre: user.nombre,
                 motivo: motivoSel,
-                asociadoMotivo: infoMotivo ? infoMotivo.asociado : "", // Va a Columna G
-                detalle: document.getElementById('detalle').value      // Va a Columna E
-            };
-
-            const res = await fetch(API, {method:'POST', body: JSON.stringify(payload)});
-            const data = await res.json();
+                asociadoMotivo: info ? info.asociado : "",
+                detalle: document.getElementById('detalle').value
+            })});
             
+            const data = await res.json();
             if(data.status === 'success') {
                 const el = document.getElementById('newId');
                 el.innerText = data.id;
-                el.dataset.copy = `${data.id}\t${data.fecha}`; // Formato TAB para Excel
+                el.dataset.copy = `${data.id}\t${data.fecha}`;
                 document.getElementById('resCard').classList.remove('hidden');
                 document.getElementById('detalle').value = "";
+                cargarHistorial();
             }
-            btn.disabled = false; btn.innerText = "GENERAR CARGO";
+            btn.disabled = false; loader.classList.add('hidden');
+        }
+
+        async function cargarHistorial() {
+            const res = await fetch(API, {method:'POST', body: JSON.stringify({action:'getHistorialCompleto', nombre:user.nombre, token:TOKEN})});
+            const data = await res.json();
+            const table = document.getElementById('histTable');
+            
+            if(data.datos && data.datos.length > 0) {
+                document.getElementById('noData').classList.add('hidden');
+                table.innerHTML = data.datos.map(i => `
+                    <tr class="hover:bg-slate-50 transition-colors">
+                        <td class="p-3 font-bold text-indigo-600">${i.id}</td>
+                        <td class="p-3 text-slate-500">${new Date(i.fecha).toLocaleDateString()}</td>
+                        <td class="p-3 font-medium">${i.motivo}</td>
+                        <td class="p-3 text-slate-400 italic">${i.detalle || '-'}</td>
+                        <td class="p-3 text-right font-bold text-slate-600">${i.cuenta || '-'}</td>
+                    </tr>
+                `).join('');
+            } else {
+                document.getElementById('noData').classList.remove('hidden');
+                table.innerHTML = "";
+            }
         }
 
         function copiar() {
-            const text = document.getElementById('newId').dataset.copy;
-            navigator.clipboard.writeText(text);
-            alert("¡Copiado! ID y Fecha listos para pegar en Excel.");
+            navigator.clipboard.writeText(document.getElementById('newId').dataset.copy);
+            alert("Copiado: ID y Fecha");
         }
     </script>
 </body>
