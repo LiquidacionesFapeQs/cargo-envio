@@ -3,52 +3,40 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Generador de Cargos OLT</title>
+    <title>Generador OLT</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
-        .loader { border-top-color: #6366f1; animation: spinner 1.5s linear infinite; }
+        .loader { border-top-color: #ffffff; animation: spinner 0.6s linear infinite; }
         @keyframes spinner { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
     </style>
 </head>
-<body class="bg-slate-50 min-h-screen font-sans antialiased text-slate-900">
+<body class="bg-slate-100 min-h-screen font-sans">
 
     <div id="loginPage" class="flex items-center justify-center min-h-screen p-6">
-        <div class="bg-white p-8 rounded-3xl shadow-xl w-full max-w-sm border border-slate-100">
-            <div class="text-center mb-8">
-                <div class="bg-indigo-600 w-16 h-16 rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-lg shadow-indigo-200">
-                    <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04m14.562 0c.19.647.298 1.328.298 2.032 0 4.474-2.247 8.209-5.511 10.334M12 21.056c-3.264-2.125-5.511-5.86-5.511-10.334 0-.704.108-1.385.298-2.032"></path></svg>
-                </div>
-                <h2 class="text-2xl font-bold text-slate-800">Acceso OLT</h2>
-                <p class="text-slate-500 text-sm">Ingresa tu DNI para comenzar</p>
-            </div>
-            
-            <input type="number" id="loginDni" placeholder="Número de DNI" 
-                class="w-full p-4 border border-slate-200 rounded-2xl mb-4 text-center text-xl focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500 outline-none transition-all">
-            
-            <button onclick="intentarLogin()" id="btnLogin" 
-                class="w-full bg-indigo-600 hover:bg-indigo-700 text-white py-4 rounded-2xl font-bold text-lg shadow-lg shadow-indigo-200 active:scale-95 transition-all">
-                ENTRAR
-            </button>
-            <p id="loginError" class="text-red-500 mt-4 text-sm font-medium hidden">⚠️ DNI no registrado</p>
+        <div class="bg-white p-8 rounded-3xl shadow-xl w-full max-w-sm">
+            <h2 class="text-2xl font-black text-slate-800 mb-2 text-center">Acceso DNI</h2>
+            <p class="text-slate-400 text-sm text-center mb-6">Identifícate para generar cargos</p>
+            <input type="number" id="loginDni" placeholder="DNI" class="w-full p-4 border-2 border-slate-100 rounded-2xl mb-4 text-center text-2xl font-bold outline-none focus:border-indigo-500 transition-all">
+            <button onclick="intentarLogin()" id="btnLogin" class="w-full bg-indigo-600 text-white py-4 rounded-2xl font-bold text-lg hover:bg-indigo-700 transition-all shadow-lg shadow-indigo-100">ENTRAR</button>
+            <p id="loginError" class="text-red-500 mt-4 text-center font-bold hidden">⚠️ DNI no registrado</p>
         </div>
     </div>
 
-    <div id="mainPage" class="hidden max-w-lg mx-auto p-4 pb-20 space-y-6">
-        
-        <header class="flex justify-between items-center bg-white p-5 rounded-3xl shadow-sm border border-slate-100 mt-2">
-            <div>
-                <p class="text-[10px] uppercase tracking-widest text-indigo-600 font-bold mb-1">Responsable Activo</p>
-                <h1 class="text-lg font-black text-slate-800" id="userNameDisplay">---</h1>
+    <div id="mainPage" class="hidden max-w-lg mx-auto p-4 space-y-4">
+        <header class="bg-white p-5 rounded-3xl shadow-sm flex justify-between items-center mt-2 border border-slate-200">
+            <div class="truncate mr-2">
+                <p class="text-[10px] font-black text-indigo-500 uppercase">Responsable</p>
+                <h1 id="userNameDisplay" class="text-lg font-bold text-slate-800 truncate">---</h1>
             </div>
-            <button onclick="logout()" class="p-2 text-slate-400 hover:text-red-500 transition-colors">
-                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path></svg>
+            <button onclick="logout()" class="bg-slate-50 p-3 rounded-2xl text-slate-400 hover:text-red-500">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path></svg>
             </button>
         </header>
 
-        <div class="bg-white p-6 rounded-3xl shadow-sm border border-slate-100 space-y-5">
+        <div class="bg-white p-6 rounded-3xl shadow-sm space-y-4 border border-slate-200">
             <div>
-                <label class="block text-xs font-bold text-slate-400 uppercase mb-2 ml-1">Seleccionar Asunto</label>
-                <select id="asunto" class="w-full p-4 border border-slate-200 rounded-2xl bg-slate-50 focus:border-indigo-500 outline-none appearance-none font-medium text-slate-700">
+                <label class="text-[10px] font-bold text-slate-400 uppercase ml-1">Asunto / Destinatario</label>
+                <select id="asunto" class="w-full p-4 bg-slate-50 border-none rounded-2xl font-bold text-slate-700 outline-none mt-1">
                     <option value="TECNOFARMA">TECNOFARMA</option>
                     <option value="LICITACIONES">LICITACIONES</option>
                     <option value="IBT HEALTH">IBT HEALTH</option>
@@ -56,169 +44,131 @@
                     <option value="CENARES">CENARES</option>
                 </select>
             </div>
-
             <div>
-                <label class="block text-xs font-bold text-slate-400 uppercase mb-2 ml-1">Comentario / Cuenta</label>
-                <input type="text" id="comentario" placeholder="Ej: Entrega Lima Norte" 
-                    class="w-full p-4 border border-slate-200 rounded-2xl bg-slate-50 focus:border-indigo-500 outline-none transition-all">
+                <label class="text-[10px] font-bold text-slate-400 uppercase ml-1">Comentario</label>
+                <input type="text" id="comentario" placeholder="Escribe aquí..." class="w-full p-4 bg-slate-50 border-none rounded-2xl outline-none mt-1">
             </div>
-
-            <button onclick="generarCargo()" id="btnGenerar" 
-                class="w-full bg-emerald-500 hover:bg-emerald-600 text-white py-5 rounded-2xl font-black text-lg shadow-lg shadow-emerald-100 active:scale-95 transition-all flex items-center justify-center gap-2">
+            <button onclick="generarCargo()" id="btnGenerar" class="w-full bg-emerald-500 text-white py-5 rounded-2xl font-black text-lg shadow-lg shadow-emerald-100 flex items-center justify-center gap-3">
                 <span id="btnText">GENERAR CARGO</span>
-                <div id="btnLoader" class="loader ease-linear rounded-full border-2 border-t-2 border-white h-5 w-5 hidden"></div>
+                <div id="btnLoader" class="loader rounded-full border-2 border-t-2 border-white h-5 w-5 hidden"></div>
             </button>
         </div>
 
-        <div id="resultCard" class="hidden animate-bounce bg-amber-400 p-5 rounded-3xl shadow-xl shadow-amber-100 flex justify-between items-center text-amber-950">
-            <div>
-                <p class="text-[10px] font-black uppercase opacity-70">Cargo Generado con Éxito</p>
-                <p id="newIdLabel" class="text-2xl font-black tracking-tighter"></p>
+        <div id="resultCard" class="hidden bg-amber-400 p-5 rounded-3xl shadow-xl flex justify-between items-center animate-pulse">
+            <div class="truncate">
+                <p class="text-[10px] font-black uppercase text-amber-900 opacity-60">Copiado Listo:</p>
+                <p id="newIdLabel" class="text-xl font-black text-amber-950 truncate"></p>
             </div>
-            <button onclick="copiarAlPortapapeles()" class="bg-white/30 hover:bg-white/50 p-3 rounded-2xl transition-all">
-                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3"></path></svg>
-            </button>
+            <button onclick="copiarInfo()" id="btnCopy" class="bg-amber-900 text-white p-4 rounded-2xl font-bold text-xs uppercase">COPIAR</button>
         </div>
 
-        <div class="space-y-4">
-            <h3 class="font-bold text-slate-800 text-sm px-2 flex items-center gap-2">
-                <svg class="w-4 h-4 text-indigo-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
-                Tus últimos registros
-            </h3>
-            <div id="historialContainer" class="space-y-3">
-                </div>
+        <div class="space-y-3">
+            <h3 class="text-xs font-black text-slate-400 uppercase ml-2 tracking-widest">Historial Reciente</h3>
+            <div id="historialContainer" class="space-y-2"></div>
         </div>
     </div>
 
     <script>
-        // CONFIGURACIÓN - CAMBIA ESTO
-        const API_URL = "https://script.google.com/macros/s/AKfycbzw0S4FmzTBB14Ad8U63t4MubP2Ru7q_6el7zvVL4k5db5IuDjCYg_x5Jq10ekkLqye/exec";
-        const TOKEN = "OLT-V04.10";
+        // --- CONFIGURACIÓN ---
+        const API_URL = "https://script.google.com/macros/s/AKfycby8O38P4ZiLrTjoNO9DsXhySN4_RyVlO4ygpvlHyDlrMFxck_PlVA1EkfHDdMKTpF_4/exec"; // <--- PEGAR AQUÍ
+        const TOKEN = "OLT-V04.10";   // <--- MISMA CLAVE DEL .GS
 
-        let sessionUser = localStorage.getItem('olt_user_name');
+        let user = localStorage.getItem('olt_name');
 
-        // Al iniciar
-        if(sessionUser) { mostrarApp(); }
+        if(user) mostrarApp();
 
         async function intentarLogin() {
             const dni = document.getElementById('loginDni').value;
-            const btn = document.getElementById('btnLogin');
-            const errorMsg = document.getElementById('loginError');
-
             if(!dni) return;
-
+            const btn = document.getElementById('btnLogin');
             btn.disabled = true;
             btn.innerText = "Verificando...";
-            errorMsg.classList.add('hidden');
 
             try {
                 const res = await callAPI({ action: "login", dni: dni });
                 if(res.status === "success") {
-                    localStorage.setItem('olt_user_name', res.nombre);
-                    sessionUser = res.nombre;
+                    localStorage.setItem('olt_name', res.nombre);
+                    user = res.nombre;
                     mostrarApp();
                 } else {
-                    errorMsg.classList.remove('hidden');
-                    btn.innerText = "ENTRAR";
+                    document.getElementById('loginError').classList.remove('hidden');
                     btn.disabled = false;
+                    btn.innerText = "ENTRAR";
                 }
-            } catch (e) {
-                alert("Error de conexión con el servidor");
-                btn.disabled = false;
-            }
+            } catch(e) { alert("Error de conexión"); btn.disabled = false; }
         }
 
         function mostrarApp() {
             document.getElementById('loginPage').classList.add('hidden');
             document.getElementById('mainPage').classList.remove('hidden');
-            document.getElementById('userNameDisplay').innerText = sessionUser;
+            document.getElementById('userNameDisplay').innerText = user;
             cargarHistorial();
         }
 
-        function logout() {
-            localStorage.clear();
-            location.reload();
-        }
+        function logout() { localStorage.clear(); location.reload(); }
 
         async function generarCargo() {
             const btn = document.getElementById('btnGenerar');
-            const btnText = document.getElementById('btnText');
-            const btnLoader = document.getElementById('btnLoader');
-            const asunto = document.getElementById('asunto').value;
-            const comentario = document.getElementById('comentario').value;
-
+            const loader = document.getElementById('btnLoader');
+            const txt = document.getElementById('btnText');
+            
             btn.disabled = true;
-            btnText.innerText = "PROCESANDO";
-            btnLoader.classList.remove('hidden');
+            txt.innerText = "REGISTRANDO...";
+            loader.classList.remove('hidden');
 
             try {
                 const res = await callAPI({ 
                     action: "registrar", 
-                    nombre: sessionUser, 
-                    asunto: asunto, 
-                    comentario: comentario 
+                    nombre: user, 
+                    asunto: document.getElementById('asunto').value,
+                    comentario: document.getElementById('comentario').value
                 });
 
                 if(res.status === "success") {
-                    const fullInfo = `Cargo: ${res.id} | Fecha: ${res.fecha}`;
+                    // FORMATO SOLICITADO: ID + TAB + FECHA
+                    const copyText = `${res.id}\t${res.fecha}`;
                     const label = document.getElementById('newIdLabel');
                     label.innerText = res.id;
-                    label.dataset.copyText = fullInfo;
+                    label.dataset.full = copyText;
                     
                     document.getElementById('resultCard').classList.remove('hidden');
                     document.getElementById('comentario').value = "";
                     cargarHistorial();
-                    
-                    // Vibración suave si el dispositivo lo permite
-                    if(navigator.vibrate) navigator.vibrate(50);
                 }
-            } catch (e) {
-                alert("Error al registrar cargo");
-            } finally {
+            } catch(e) { alert("Error en el registro"); }
+            finally {
                 btn.disabled = false;
-                btnText.innerText = "GENERAR CARGO";
-                btnLoader.classList.add('hidden');
+                txt.innerText = "GENERAR CARGO";
+                loader.classList.add('hidden');
             }
         }
 
         async function cargarHistorial() {
-            const container = document.getElementById('historialContainer');
-            try {
-                const res = await callAPI({ action: "getHistorial", nombre: sessionUser });
-                if(res.datos && res.datos.length > 0) {
-                    container.innerHTML = res.datos.map(item => `
-                        <div class="bg-white p-4 rounded-2xl shadow-sm border border-slate-100 flex justify-between items-center group active:bg-slate-50 transition-all">
-                            <div>
-                                <p class="font-black text-slate-800 tracking-tight">${item.id}</p>
-                                <p class="text-[11px] text-slate-400 font-bold uppercase">${item.destino}</p>
-                            </div>
-                            <div class="text-right">
-                                <p class="text-[10px] text-slate-300 font-medium">${new Date(item.fecha).toLocaleDateString('es-PE')}</p>
-                            </div>
-                        </div>
-                    `).join('');
-                } else {
-                    container.innerHTML = '<p class="text-center text-slate-400 text-xs py-4">No hay cargos recientes</p>';
-                }
-            } catch (e) {
-                container.innerHTML = '<p class="text-center text-red-400 text-xs py-4">Error al cargar historial</p>';
+            const res = await callAPI({ action: "getHistorial", nombre: user });
+            const cont = document.getElementById('historialContainer');
+            if(res.datos && res.datos.length > 0) {
+                cont.innerHTML = res.datos.map(i => `
+                    <div class="bg-white p-4 rounded-2xl shadow-sm border border-slate-200 flex justify-between items-center">
+                        <div><p class="font-black text-slate-800 text-sm">${i.id}</p><p class="text-[10px] font-bold text-slate-400 uppercase">${i.destino}</p></div>
+                        <p class="text-[10px] text-slate-300 font-bold">${new Date(i.fecha).toLocaleDateString('es-PE')}</p>
+                    </div>
+                `).join('');
             }
         }
 
-        function copiarAlPortapapeles() {
-            const text = document.getElementById('newIdLabel').dataset.copyText;
+        function copiarInfo() {
+            const btn = document.getElementById('btnCopy');
+            const text = document.getElementById('newIdLabel').dataset.full;
             navigator.clipboard.writeText(text).then(() => {
-                alert("Copiado: " + text);
+                btn.innerText = "¡LISTO!";
+                setTimeout(() => { btn.innerText = "COPIAR"; }, 2000);
             });
         }
 
-        async function callAPI(payload) {
-            payload.token = TOKEN;
-            const response = await fetch(API_URL, {
-                method: 'POST',
-                body: JSON.stringify(payload)
-            });
-            return await response.json();
+        async function callAPI(p) {
+            p.token = TOKEN;
+            const r = await fetch(API_URL, { method: 'POST', body: JSON.stringify(p) });
+            return await r.json();
         }
     </script>
 </body>
