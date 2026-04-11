@@ -3,255 +3,293 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Sistema de Cargos OLT</title>
+  <title>Generador de Cargos</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Barlow:wght@400;500;600;700;900&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
 
   <style>
-    /* ─── VARIABLES ─────────────────────────────────────────── */
+    /* ── TOKENS ─────────────────────────────────────────────── */
     :root {
-      --bg:        #0d0f12;
-      --surface:   #13161b;
-      --border:    #252830;
-      --accent:    #00d4ff;
-      --accent2:   #ff6b35;
-      --text:      #d8dce6;
-      --muted:     #5a6070;
-      --success:   #2ecc71;
-      --danger:    #e74c3c;
-      --mono:      'Share Tech Mono', monospace;
-      --sans:      'Barlow', sans-serif;
+      --bg:         #0e1117;
+      --surface:    #161b26;
+      --surface2:   #1e2535;
+      --border:     #252d3d;
+      --border2:    #2e3a50;
+      --gold:       #f5a623;
+      --gold-dim:   rgba(245,166,35,.12);
+      --blue:       #4f8ef7;
+      --blue-dim:   rgba(79,142,247,.1);
+      --green:      #34d399;
+      --green-dim:  rgba(52,211,153,.1);
+      --red:        #f87171;
+      --text:       #e2e8f0;
+      --text2:      #94a3b8;
+      --text3:      #4a5568;
+      --mono:       'DM Mono', monospace;
+      --sans:       'Plus Jakarta Sans', sans-serif;
+      --r:          10px;
+      --shadow:     0 4px 24px rgba(0,0,0,.4);
     }
 
-    /* ─── RESET & BASE ──────────────────────────────────────── */
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body { height: 100%; }
 
     body {
       font-family: var(--sans);
       background: var(--bg);
       color: var(--text);
       min-height: 100vh;
-      display: flex;
-      flex-direction: column;
-      overflow-x: hidden;
     }
 
-    /* ─── NOISE OVERLAY ─────────────────────────────────────── */
     body::before {
       content: '';
-      position: fixed; inset: 0;
-      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");
-      pointer-events: none;
-      z-index: 999;
-      opacity: 0.5;
+      position: fixed; inset: 0; pointer-events: none; z-index: 0;
+      background-image:
+        linear-gradient(rgba(255,255,255,.018) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255,255,255,.018) 1px, transparent 1px);
+      background-size: 48px 48px;
     }
 
-    /* ─── HEADER ────────────────────────────────────────────── */
-    header {
+    .hidden { display: none !important; }
+
+    /* ═══ LOGIN ════════════════════════════════════════════════ */
+    #loginPage {
+      position: relative; z-index: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      padding: 24px;
+      background: radial-gradient(ellipse 70% 60% at 50% 40%, rgba(79,142,247,.07) 0%, transparent 70%);
+    }
+
+    .login-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      padding: 44px 40px;
+      width: 100%;
+      max-width: 380px;
+      box-shadow: var(--shadow), 0 0 0 1px rgba(255,255,255,.03) inset;
+      animation: fadeUp .45s cubic-bezier(.22,1,.36,1) both;
+    }
+
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(18px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    .login-mark {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 28px;
+    }
+
+    .login-mark-badge {
+      width: 32px; height: 32px;
+      background: var(--gold);
+      border-radius: 8px;
+      display: flex; align-items: center; justify-content: center;
+      font-family: var(--mono);
+      font-size: 11px;
+      color: #000;
+      letter-spacing: .04em;
+    }
+
+    .login-mark-text {
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--text2);
+      letter-spacing: .06em;
+      text-transform: uppercase;
+    }
+
+    .login-heading {
+      font-size: 24px;
+      font-weight: 800;
+      color: var(--text);
+      line-height: 1.25;
+      margin-bottom: 6px;
+    }
+
+    .login-sub {
+      font-size: 13px;
+      color: var(--text3);
+      margin-bottom: 32px;
+    }
+
+    /* ── FIELD ── */
+    .field { margin-bottom: 16px; }
+
+    .field label {
+      display: block;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: .09em;
+      text-transform: uppercase;
+      color: var(--text2);
+      margin-bottom: 8px;
+    }
+
+    .field input,
+    .field select,
+    .field textarea {
+      width: 100%;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: var(--r);
+      color: var(--text);
+      font-family: var(--sans);
+      font-size: 14px;
+      padding: 11px 14px;
+      outline: none;
+      transition: border-color .18s, box-shadow .18s;
+      appearance: none;
+    }
+
+    .field input:focus,
+    .field select:focus,
+    .field textarea:focus {
+      border-color: var(--blue);
+      box-shadow: 0 0 0 3px rgba(79,142,247,.15);
+    }
+
+    .field select {
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' fill='%2394a3b8' viewBox='0 0 16 16'%3E%3Cpath d='M7.247 11.14L2.451 5.658C1.885 5.013 2.345 4 3.204 4h9.592a1 1 0 0 1 .753 1.659l-4.796 5.48a1 1 0 0 1-1.506 0z'/%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-position: right 14px center;
+      padding-right: 38px;
+      cursor: pointer;
+    }
+
+    .field textarea { resize: none; line-height: 1.6; }
+
+    /* ── BOTONES ── */
+    .btn {
+      width: 100%;
+      padding: 12px 20px;
+      border: none;
+      border-radius: var(--r);
+      font-family: var(--sans);
+      font-size: 14px;
+      font-weight: 700;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      transition: all .18s;
+      letter-spacing: .02em;
+    }
+
+    .btn-blue { background: var(--blue); color: #fff; }
+    .btn-blue:hover { background: #6fa3f9; transform: translateY(-1px); box-shadow: 0 6px 20px rgba(79,142,247,.35); }
+    .btn-blue:active { transform: translateY(0); }
+    .btn-blue:disabled { opacity: .5; cursor: not-allowed; transform: none; box-shadow: none; }
+
+    .btn-green { background: var(--green); color: #052e1c; }
+    .btn-green:hover { background: #5eead4; transform: translateY(-1px); box-shadow: 0 6px 20px rgba(52,211,153,.3); }
+    .btn-green:active { transform: translateY(0); }
+    .btn-green:disabled { opacity: .5; cursor: not-allowed; transform: none; box-shadow: none; }
+
+    .loader {
+      width: 16px; height: 16px;
+      border-radius: 50%;
+      border: 2px solid rgba(0,0,0,.2);
+      border-top-color: rgba(0,0,0,.7);
+      animation: spin .6s linear infinite;
+    }
+    .btn-blue .loader { border-color: rgba(255,255,255,.3); border-top-color: #fff; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* ═══ APP ══════════════════════════════════════════════════ */
+    #appPage {
+      position: relative; z-index: 1;
+      display: flex;
+      flex-direction: column;
+      height: 100vh;
+    }
+
+    /* ── HEADER ── */
+    .app-header {
       display: flex;
       align-items: center;
       justify-content: space-between;
       padding: 0 28px;
-      height: 56px;
+      height: 58px;
       background: var(--surface);
       border-bottom: 1px solid var(--border);
-      position: sticky; top: 0; z-index: 100;
+      flex-shrink: 0;
     }
 
-    .logo {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      font-family: var(--mono);
-      font-size: 13px;
-      letter-spacing: 0.12em;
-      color: var(--accent);
-    }
+    .header-brand { display: flex; align-items: center; gap: 12px; }
 
-    .logo-badge {
-      width: 28px; height: 28px;
-      background: var(--accent);
+    .brand-badge {
+      background: var(--gold);
       color: #000;
-      font-weight: 900;
-      display: flex; align-items: center; justify-content: center;
+      font-family: var(--mono);
       font-size: 11px;
-      clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%);
+      padding: 4px 10px;
+      border-radius: 6px;
+      letter-spacing: .06em;
     }
 
-    .header-right {
+    .brand-title {
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--text2);
+      letter-spacing: .04em;
+      text-transform: uppercase;
+    }
+
+    .header-right { display: flex; align-items: center; gap: 12px; }
+
+    .user-pill {
       display: flex;
       align-items: center;
-      gap: 16px;
+      gap: 8px;
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 999px;
+      padding: 5px 14px 5px 8px;
     }
 
-    #user-display {
-      font-family: var(--mono);
-      font-size: 12px;
-      color: var(--muted);
-      display: none;
+    .user-avatar {
+      width: 24px; height: 24px;
+      background: var(--blue-dim);
+      border: 1px solid var(--blue);
+      border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 10px;
+      color: var(--blue);
+      font-weight: 700;
     }
 
-    #user-display span { color: var(--accent); }
+    #uName { font-size: 13px; font-weight: 600; color: var(--text); }
 
     .btn-logout {
-      font-family: var(--mono);
-      font-size: 11px;
-      letter-spacing: 0.08em;
       background: none;
       border: 1px solid var(--border);
-      color: var(--muted);
-      padding: 5px 12px;
-      cursor: pointer;
-      transition: all .2s;
-      display: none;
-    }
-    .btn-logout:hover { border-color: var(--danger); color: var(--danger); }
-
-    /* ─── VIEWS ─────────────────────────────────────────────── */
-    .view { display: none; flex: 1; }
-    .view.active { display: flex; }
-
-    /* ─── LOGIN VIEW ────────────────────────────────────────── */
-    #view-login {
-      align-items: center;
-      justify-content: center;
-      flex-direction: column;
-      background:
-        radial-gradient(ellipse 60% 50% at 50% 50%, rgba(0,212,255,.05) 0%, transparent 70%);
-    }
-
-    .login-box {
-      width: 360px;
-      background: var(--surface);
-      border: 1px solid var(--border);
-      padding: 40px 36px;
-      position: relative;
-    }
-
-    .login-box::before {
-      content: '';
-      position: absolute;
-      top: 0; left: 0; right: 0;
-      height: 2px;
-      background: linear-gradient(90deg, transparent, var(--accent), transparent);
-    }
-
-    .login-title {
-      font-family: var(--mono);
-      font-size: 11px;
-      letter-spacing: 0.2em;
-      color: var(--accent);
-      margin-bottom: 8px;
-      text-transform: uppercase;
-    }
-
-    .login-subtitle {
-      font-size: 22px;
-      font-weight: 700;
-      color: var(--text);
-      margin-bottom: 32px;
-      line-height: 1.2;
-    }
-
-    .field-group { margin-bottom: 20px; }
-
-    label {
-      display: block;
-      font-family: var(--mono);
-      font-size: 10px;
-      letter-spacing: 0.15em;
-      color: var(--muted);
-      margin-bottom: 8px;
-      text-transform: uppercase;
-    }
-
-    input, select, textarea {
-      width: 100%;
-      background: var(--bg);
-      border: 1px solid var(--border);
-      color: var(--text);
+      border-radius: 8px;
+      color: var(--text3);
       font-family: var(--sans);
-      font-size: 14px;
-      padding: 10px 14px;
-      outline: none;
-      transition: border-color .2s;
-      appearance: none;
-    }
-
-    input:focus, select:focus, textarea:focus {
-      border-color: var(--accent);
-    }
-
-    select {
-      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' fill='%235a6070' viewBox='0 0 16 16'%3E%3Cpath d='M7.247 11.14L2.451 5.658C1.885 5.013 2.345 4 3.204 4h9.592a1 1 0 0 1 .753 1.659l-4.796 5.48a1 1 0 0 1-1.506 0z'/%3E%3C/svg%3E");
-      background-repeat: no-repeat;
-      background-position: right 14px center;
-      padding-right: 36px;
-      cursor: pointer;
-    }
-
-    textarea { resize: vertical; min-height: 80px; line-height: 1.5; }
-
-    /* Botón primario */
-    .btn-primary {
-      width: 100%;
-      padding: 12px;
-      background: var(--accent);
-      color: #000;
-      font-family: var(--mono);
       font-size: 12px;
-      font-weight: 700;
-      letter-spacing: 0.15em;
-      border: none;
+      font-weight: 600;
+      padding: 6px 14px;
       cursor: pointer;
-      text-transform: uppercase;
-      transition: all .2s;
-      position: relative;
-      overflow: hidden;
+      transition: all .18s;
     }
+    .btn-logout:hover { border-color: var(--red); color: var(--red); }
 
-    .btn-primary:hover { background: #33ddff; }
-    .btn-primary:active { transform: scale(0.99); }
-    .btn-primary:disabled { background: var(--border); color: var(--muted); cursor: not-allowed; }
+    /* ── SPLIT ── */
+    .app-main { display: flex; flex: 1; overflow: hidden; }
 
-    .btn-primary .spinner {
-      display: none;
-      width: 14px; height: 14px;
-      border: 2px solid rgba(0,0,0,.3);
-      border-top-color: #000;
-      border-radius: 50%;
-      animation: spin .6s linear infinite;
-      margin: 0 auto;
-    }
-
-    @keyframes spin { to { transform: rotate(360deg); } }
-
-    .btn-primary.loading .btn-text { display: none; }
-    .btn-primary.loading .spinner { display: block; }
-
-    /* Mensaje de error */
-    .msg-error {
-      font-family: var(--mono);
-      font-size: 11px;
-      color: var(--danger);
-      margin-top: 12px;
-      min-height: 16px;
-      text-align: center;
-      letter-spacing: 0.05em;
-    }
-
-    /* ─── MAIN VIEW (SPLIT) ─────────────────────────────────── */
-    #view-main {
-      flex-direction: row;
-      height: calc(100vh - 56px);
-      overflow: hidden;
-    }
-
-    /* ─── PANEL IZQUIERDO (FORMULARIO) ──────────────────────── */
+    /* ── PANEL IZQ ── */
     .panel-left {
-      width: 380px;
-      min-width: 320px;
+      width: 360px;
+      min-width: 300px;
       flex-shrink: 0;
       background: var(--surface);
       border-right: 1px solid var(--border);
@@ -260,245 +298,204 @@
       overflow-y: auto;
     }
 
-    .panel-header {
-      padding: 20px 24px 16px;
-      border-bottom: 1px solid var(--border);
-      position: sticky; top: 0;
-      background: var(--surface);
-      z-index: 10;
-    }
+    .panel-left::-webkit-scrollbar { width: 4px; }
+    .panel-left::-webkit-scrollbar-track { background: transparent; }
+    .panel-left::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 4px; }
 
-    .panel-label {
-      font-family: var(--mono);
-      font-size: 9px;
-      letter-spacing: 0.25em;
-      color: var(--accent);
-      text-transform: uppercase;
-      margin-bottom: 4px;
-    }
-
-    .panel-title {
-      font-size: 16px;
+    .section-label {
+      font-size: 10px;
       font-weight: 700;
-      color: var(--text);
-    }
-
-    .panel-body { padding: 24px; flex: 1; }
-
-    /* RESULTADO generado */
-    #resultado-box {
-      display: none;
-      background: var(--bg);
-      border: 1px solid var(--border);
-      border-left: 3px solid var(--success);
-      padding: 16px;
-      margin-bottom: 20px;
-    }
-
-    .resultado-label {
-      font-family: var(--mono);
-      font-size: 9px;
-      letter-spacing: 0.2em;
-      color: var(--muted);
       text-transform: uppercase;
-      margin-bottom: 6px;
+      letter-spacing: .12em;
+      color: var(--text3);
     }
 
-    .resultado-id {
+    .panel-head { padding: 22px 24px 16px; border-bottom: 1px solid var(--border); }
+    .panel-body { padding: 20px 24px 32px; display: flex; flex-direction: column; gap: 16px; }
+
+    /* cargo result */
+    #resCard {
+      background: linear-gradient(135deg, rgba(245,166,35,.08) 0%, rgba(245,166,35,.03) 100%);
+      border: 1px solid rgba(245,166,35,.25);
+      border-radius: 14px;
+      padding: 18px 20px;
+      animation: fadeUp .35s cubic-bezier(.22,1,.36,1);
+    }
+
+    .res-label {
+      font-size: 9px;
+      font-weight: 700;
+      letter-spacing: .15em;
+      text-transform: uppercase;
+      color: var(--gold);
+      margin-bottom: 8px;
+    }
+
+    #newId {
       font-family: var(--mono);
-      font-size: 20px;
-      color: var(--success);
-      letter-spacing: 0.05em;
-      margin-bottom: 4px;
+      font-size: 22px;
+      font-weight: 500;
+      color: var(--gold);
+      letter-spacing: .04em;
+      line-height: 1;
+      margin-bottom: 14px;
     }
 
-    .resultado-fecha {
-      font-family: var(--mono);
-      font-size: 12px;
-      color: var(--muted);
-    }
-
-    /* Botón copiar */
     .btn-copy {
       width: 100%;
-      margin-top: 12px;
       padding: 9px;
-      background: none;
-      border: 1px solid var(--success);
-      color: var(--success);
-      font-family: var(--mono);
-      font-size: 11px;
-      letter-spacing: 0.12em;
+      background: rgba(245,166,35,.1);
+      border: 1px solid rgba(245,166,35,.28);
+      border-radius: 8px;
+      color: var(--gold);
+      font-family: var(--sans);
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: .05em;
       cursor: pointer;
-      text-transform: uppercase;
-      transition: all .2s;
       display: flex;
       align-items: center;
       justify-content: center;
-      gap: 8px;
+      gap: 7px;
+      transition: all .18s;
     }
+    .btn-copy:hover { background: rgba(245,166,35,.18); }
 
-    .btn-copy:hover { background: rgba(46,204,113,.1); }
-    .btn-copy.copied { border-color: var(--accent); color: var(--accent); }
-
-    /* ─── PANEL DERECHO (HISTORIAL) ─────────────────────────── */
+    /* ── PANEL DER ── */
     .panel-right {
       flex: 1;
       display: flex;
       flex-direction: column;
       overflow: hidden;
+      padding: 22px 28px 28px;
+      gap: 16px;
     }
 
-    .table-container {
+    .panel-right-top {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-shrink: 0;
+    }
+
+    .count-badge {
+      font-size: 11px;
+      font-weight: 700;
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 999px;
+      padding: 3px 12px;
+      color: var(--text3);
+    }
+
+    .table-wrap {
       flex: 1;
-      overflow-y: auto;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
     }
 
-    table {
-      width: 100%;
-      border-collapse: collapse;
-    }
+    .table-scroll { overflow-y: auto; flex: 1; }
+    .table-scroll::-webkit-scrollbar { width: 4px; }
+    .table-scroll::-webkit-scrollbar-track { background: transparent; }
+    .table-scroll::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 4px; }
+
+    table { width: 100%; border-collapse: collapse; }
 
     thead {
-      position: sticky; top: 0;
-      background: var(--surface);
-      z-index: 5;
+      position: sticky; top: 0; z-index: 5;
+      background: var(--surface2);
     }
 
+    thead tr { border-bottom: 1px solid var(--border); }
+
     th {
-      padding: 14px 16px;
+      padding: 12px 16px;
       text-align: left;
-      font-family: var(--mono);
-      font-size: 9px;
-      letter-spacing: 0.2em;
-      color: var(--muted);
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: .1em;
       text-transform: uppercase;
-      border-bottom: 1px solid var(--border);
+      color: var(--text3);
       white-space: nowrap;
     }
 
     td {
       padding: 13px 16px;
       font-size: 13px;
-      border-bottom: 1px solid rgba(37,40,48,.6);
+      color: var(--text2);
+      border-bottom: 1px solid rgba(37,45,61,.5);
       vertical-align: middle;
-      transition: background .15s;
     }
 
-    tr:hover td { background: rgba(255,255,255,.015); }
+    tbody tr:last-child td { border-bottom: none; }
+    tbody tr { transition: background .15s; }
+    tbody tr:hover td { background: rgba(255,255,255,.02); }
 
-    .td-cargo {
-      font-family: var(--mono);
-      font-size: 12px;
-      color: var(--accent);
-      letter-spacing: 0.04em;
-    }
+    .col-id    { font-family: var(--mono); font-size: 12px; color: var(--blue); }
+    .col-fecha { font-family: var(--mono); font-size: 11px; color: var(--text3); white-space: nowrap; }
+    .col-motivo { font-weight: 600; color: var(--text); }
+    .col-detalle { color: var(--text3); font-style: italic; max-width: 220px; }
+    .col-cuenta { text-align: right; font-family: var(--mono); font-size: 11px; color: var(--gold); }
 
-    .td-fecha {
-      font-family: var(--mono);
-      font-size: 11px;
-      color: var(--muted);
-      white-space: nowrap;
-    }
-
-    .td-motivo {
-      font-size: 12px;
-      font-weight: 600;
-      color: var(--text);
-    }
-
-    .td-detalle {
-      font-size: 12px;
-      color: var(--muted);
-      max-width: 280px;
-    }
-
-    .td-asociado {
-      font-family: var(--mono);
-      font-size: 10px;
-      color: var(--accent2);
-      letter-spacing: 0.06em;
-    }
-
-    /* Fila nueva resaltada */
-    tr.new-row td {
-      animation: highlight 2.5s ease-out forwards;
-    }
-
-    @keyframes highlight {
-      0%   { background: rgba(0,212,255,.15); }
+    .row-new td { animation: rowGlow .6s ease both; }
+    @keyframes rowGlow {
+      0%   { background: rgba(52,211,153,.1); }
       100% { background: transparent; }
     }
 
-    /* Estado vacío */
-    .empty-state {
+    /* empty */
+    #noData {
+      flex: 1;
       display: flex;
       flex-direction: column;
       align-items: center;
       justify-content: center;
-      padding: 80px 32px;
-      gap: 12px;
+      padding: 60px 20px;
+      gap: 10px;
     }
 
     .empty-icon {
-      width: 48px; height: 48px;
-      border: 2px solid var(--border);
-      border-radius: 50%;
+      width: 44px; height: 44px;
+      border: 2px solid var(--border2);
+      border-radius: 12px;
       display: flex; align-items: center; justify-content: center;
-      color: var(--muted);
-      font-size: 20px;
+      color: var(--text3);
+      font-size: 18px;
       margin-bottom: 4px;
     }
 
-    .empty-text {
-      font-family: var(--mono);
-      font-size: 11px;
-      color: var(--muted);
-      letter-spacing: 0.1em;
-      text-align: center;
-    }
+    .empty-text { font-size: 13px; color: var(--text3); font-weight: 500; text-align: center; line-height: 1.6; }
 
-    /* ─── SCROLLBAR ─────────────────────────────────────────── */
-    ::-webkit-scrollbar { width: 4px; height: 4px; }
-    ::-webkit-scrollbar-track { background: transparent; }
-    ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
-    ::-webkit-scrollbar-thumb:hover { background: var(--muted); }
-
-    /* ─── TOAST ─────────────────────────────────────────────── */
+    /* ── TOAST ── */
     #toast {
       position: fixed;
-      bottom: 28px; right: 28px;
-      padding: 10px 18px;
-      font-family: var(--mono);
-      font-size: 11px;
-      letter-spacing: 0.1em;
-      background: var(--surface);
-      border: 1px solid var(--border);
+      bottom: 24px; right: 24px;
+      background: var(--surface2);
+      border: 1px solid var(--border2);
+      border-radius: 10px;
+      padding: 11px 18px;
+      font-size: 13px;
+      font-weight: 600;
       color: var(--text);
+      box-shadow: var(--shadow);
       z-index: 9999;
       opacity: 0;
-      transform: translateY(10px);
+      transform: translateY(8px);
       transition: all .25s;
       pointer-events: none;
+      display: flex;
+      align-items: center;
+      gap: 8px;
     }
-
     #toast.show { opacity: 1; transform: translateY(0); }
-    #toast.toast-ok   { border-color: var(--success); color: var(--success); }
-    #toast.toast-err  { border-color: var(--danger);  color: var(--danger); }
 
-    /* ─── COUNTER BADGE ─────────────────────────────────────── */
-    .count-badge {
-      background: var(--border);
-      color: var(--muted);
-      font-family: var(--mono);
-      font-size: 10px;
-      padding: 2px 8px;
-      margin-left: 8px;
-    }
-
-    /* ─── RESPONSIVE ────────────────────────────────────────── */
+    /* ── RESPONSIVE ── */
     @media (max-width: 768px) {
-      #view-main { flex-direction: column; height: auto; overflow: auto; }
+      .app-main { flex-direction: column; overflow: auto; }
       .panel-left { width: 100%; min-width: unset; border-right: none; border-bottom: 1px solid var(--border); }
       .panel-right { min-height: 400px; }
     }
@@ -506,387 +503,301 @@
 </head>
 <body>
 
-  <!-- ─── HEADER ─────────────────────────────────────────────── -->
-  <header>
-    <div class="logo">
-      <div class="logo-badge">OLT</div>
-      SISTEMA DE CARGOS
-    </div>
-    <div class="header-right">
-      <div id="user-display">SESIÓN: <span id="nombre-header"></span></div>
-      <button class="btn-logout" id="btn-logout" onclick="logout()">[ SALIR ]</button>
-    </div>
-  </header>
+  <!-- ═══ LOGIN ════════════════════════════════════════════════ -->
+  <div id="loginPage">
+    <div class="login-card">
 
-  <!-- ─── VIEW: LOGIN ─────────────────────────────────────────── -->
-  <div class="view active" id="view-login">
-    <div class="login-box">
-      <p class="login-title">// Autenticación requerida</p>
-      <h1 class="login-subtitle">Ingresa tu<br/>número de DNI</h1>
-
-      <div class="field-group">
-        <label for="input-dni">DNI</label>
-        <input type="text" id="input-dni" placeholder="Ej: 71234567" maxlength="12"
-               onkeydown="if(event.key==='Enter') doLogin()" />
+      <div class="login-mark">
+        <span class="login-mark-text">Generador de Cargos</span>
       </div>
 
-      <button class="btn-primary" id="btn-login" onclick="doLogin()">
-        <div class="btn-text">INGRESAR</div>
-        <div class="spinner"></div>
+      <h1 class="login-heading">Bienvenido</h1>
+      <p class="login-sub">Ingresa tu DNI para continuar.</p>
+
+      <div class="field">
+        <label for="dni">Número de DNI</label>
+        <input type="number" id="dni" placeholder="Ej: 71234567"
+               onkeydown="if(event.key==='Enter') login()" />
+      </div>
+
+      <button onclick="login()" id="btnLogin" class="btn btn-blue">
+        <span>Ingresar al sistema</span>
+        <div id="loginLoader" class="loader hidden"></div>
       </button>
 
-      <p class="msg-error" id="login-error"></p>
+      <p id="loginErr" style="margin-top:12px;font-size:12px;color:var(--red);text-align:center;min-height:16px;"></p>
+
     </div>
   </div>
 
-  <!-- ─── VIEW: MAIN ──────────────────────────────────────────── -->
-  <div class="view" id="view-main">
+  <!-- ═══ APP ══════════════════════════════════════════════════ -->
+  <div id="appPage" class="hidden">
 
-    <!-- Panel Izquierdo: Formulario -->
-    <aside class="panel-left">
-      <div class="panel-header">
-        <p class="panel-label">// Nuevo registro</p>
-        <h2 class="panel-title">Generar Cargo</h2>
+    <header class="app-header">
+      <div class="header-brand">
+        <span class="brand-title">Control de Cargos</span>
       </div>
+      <div class="header-right">
+        <div class="user-pill">
+          <div class="user-avatar" id="userAvatar">–</div>
+          <span id="uName">---</span>
+        </div>
+        <button class="btn-logout" onclick="location.reload()">Cerrar sesión</button>
+      </div>
+    </header>
 
-      <div class="panel-body">
+    <div class="app-main">
 
-        <!-- Resultado del último cargo generado -->
-        <div id="resultado-box">
-          <p class="resultado-label">// Cargo generado</p>
-          <p class="resultado-id" id="resultado-id">—</p>
-          <p class="resultado-fecha" id="resultado-fecha"></p>
-          <button class="btn-copy" id="btn-copy" onclick="copiarCargo()">
-            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>
-            </svg>
-            <span id="copy-label">COPIAR PARA EXCEL</span>
+      <!-- ── Formulario ──────────────────────────────────────── -->
+      <aside class="panel-left">
+        <div class="panel-head">
+          <span class="section-label">Nuevo cargo</span>
+        </div>
+
+        <div class="panel-body">
+
+          <!-- Resultado generado -->
+          <div id="resCard" class="hidden">
+            <p class="res-label">✦ Cargo generado</p>
+            <p id="newId">—</p>
+            <button onclick="copiar()" class="btn-copy">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+                <rect x="9" y="9" width="13" height="13" rx="2"/>
+                <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>
+              </svg>
+              <span id="copyLabel">Copiar para Excel</span>
+            </button>
+          </div>
+
+          <!-- Motivo -->
+          <div class="field">
+            <label for="motivo">Motivo</label>
+            <select id="motivo">
+              <option>Cargando motivos…</option>
+            </select>
+          </div>
+
+          <!-- Detalle -->
+          <div class="field">
+            <label for="detalle">Detalle adicional</label>
+            <textarea id="detalle" rows="4" placeholder="Descripción del cargo…"></textarea>
+          </div>
+
+          <!-- Botón -->
+          <button onclick="generar()" id="btnG" class="btn btn-green">
+            <span id="btnGText">Generar Cargo</span>
+            <div id="btnLoader" class="loader hidden"></div>
           </button>
+
+          <p id="formErr" style="font-size:12px;color:var(--red);text-align:center;min-height:14px;"></p>
+
+        </div>
+      </aside>
+
+      <!-- ── Historial ─────────────────────────────────────────── -->
+      <section class="panel-right">
+
+        <div class="panel-right-top">
+          <span class="section-label">Mi historial</span>
+          <span class="count-badge" id="countBadge">0 registros</span>
         </div>
 
-        <!-- Formulario -->
-        <div class="field-group">
-          <label for="select-motivo">Motivo</label>
-          <select id="select-motivo">
-            <option value="">— Selecciona un motivo —</option>
-          </select>
+        <div class="table-wrap">
+          <div class="table-scroll">
+            <table id="histTable" style="display:none">
+              <thead>
+                <tr>
+                  <th>N° Cargo</th>
+                  <th>Fecha</th>
+                  <th>Motivo</th>
+                  <th>Detalle</th>
+                  <th style="text-align:right">Cuenta</th>
+                </tr>
+              </thead>
+              <tbody id="histBody"></tbody>
+            </table>
+          </div>
+
+          <div id="noData">
+            <div class="empty-icon">◈</div>
+            <p class="empty-text">Sin registros aún.<br/>Genera tu primer cargo.</p>
+          </div>
         </div>
 
-        <div class="field-group">
-          <label for="textarea-detalle">Detalle</label>
-          <textarea id="textarea-detalle" rows="5" placeholder="Describe el motivo del cargo..."></textarea>
-        </div>
-
-        <button class="btn-primary" id="btn-registrar" onclick="doRegistrar()">
-          <div class="btn-text">REGISTRAR CARGO</div>
-          <div class="spinner"></div>
-        </button>
-
-        <p class="msg-error" id="form-error"></p>
-
-      </div>
-    </aside>
-
-    <!-- Panel Derecho: Historial -->
-    <section class="panel-right">
-      <div class="panel-header" style="padding: 20px 24px;">
-        <p class="panel-label">// Mis registros</p>
-        <h2 class="panel-title">
-          Historial
-          <span class="count-badge" id="count-badge">0</span>
-        </h2>
-      </div>
-
-      <div class="table-container" id="table-container">
-        <div class="empty-state" id="empty-state">
-          <div class="empty-icon">◈</div>
-          <p class="empty-text">SIN REGISTROS<br/>PARA ESTE USUARIO</p>
-        </div>
-        <table id="tabla-historial" style="display:none">
-          <thead>
-            <tr>
-              <th>N° Cargo</th>
-              <th>Fecha</th>
-              <th>Motivo</th>
-              <th>Detalle</th>
-              <th>Asociado</th>
-            </tr>
-          </thead>
-          <tbody id="tbody-historial"></tbody>
-        </table>
-      </div>
-    </section>
-
+      </section>
+    </div>
   </div>
 
-  <!-- ─── TOAST ───────────────────────────────────────────────── -->
+  <!-- Toast -->
   <div id="toast"></div>
 
-  <!-- ─────────────────────────────────────────────────────────── -->
+  <!-- ═══ JS — Lógica original ═════════════════════════════════ -->
   <script>
-    // ============================================================
-    //  CONFIGURACIÓN — EDITAR ANTES DE DESPLEGAR
-    // ============================================================
-    const GAS_URL       = "https://script.google.com/macros/s/AKfycbxb8yWZ9Ulw6ELjHYY1mwUIO6DNDvWallPK6EDgoJMF1DGSKrnDhYMfZbHTSukH8E8_/exec";  // ← URL del Web App GAS
-    const TOKEN_SISTEMA = "OLT-TOKEN-2025";                   // ← Debe coincidir con Codigo.gs
+    const API   = "https://script.google.com/macros/s/AKfycbwo9OafSc-ailrw2QXgJtfMOiv7mTL88VnKDMyd8J5a58iuGjFg5lvXI7Tc7_AFwWo3/exec";
+    const TOKEN = "generarcargo-0410";
 
-    // ============================================================
-    //  ESTADO
-    // ============================================================
-    let SESSION = {
-      nombre  : null,
-      historial: [],
-      ultimoCargo: null,
-      ultimaFecha: null,
-      motivosMap: {}   // motivo → asociado
-    };
+    let user = { nombre: "" };
+    let motivosData = [];
 
-    // ============================================================
-    //  UTILIDADES
-    // ============================================================
-    async function callAPI(payload) {
-      const resp = await fetch(GAS_URL, {
-        method : "POST",
-        body   : JSON.stringify({ token: TOKEN_SISTEMA, ...payload }),
-        headers: { "Content-Type": "application/json" }
-      });
-      if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
-      return resp.json();
+    /* ── Helpers ── */
+    function showToast(msg, ok = true) {
+      const t = document.getElementById('toast');
+      t.innerHTML = `<span style="color:${ok ? 'var(--green)' : 'var(--red)'}">${ok ? '✓' : '✗'}</span> ${msg}`;
+      t.classList.add('show');
+      clearTimeout(t._t);
+      t._t = setTimeout(() => t.classList.remove('show'), 2800);
     }
 
-    function showToast(msg, tipo = "ok") {
-      const t = document.getElementById("toast");
-      t.textContent = msg;
-      t.className = `show toast-${tipo}`;
-      clearTimeout(t._timer);
-      t._timer = setTimeout(() => { t.className = ""; }, 3000);
-    }
+    /* ── LOGIN ── */
+    async function login() {
+      const dni   = document.getElementById('dni').value.trim();
+      const errEl = document.getElementById('loginErr');
+      errEl.textContent = '';
+      if (!dni) { errEl.textContent = 'Ingresa tu DNI.'; return; }
 
-    function setLoading(btnId, loading) {
-      const btn = document.getElementById(btnId);
-      if (loading) btn.classList.add("loading");
-      else btn.classList.remove("loading");
-      btn.disabled = loading;
-    }
+      const btn = document.getElementById('btnLogin');
+      const ldr = document.getElementById('loginLoader');
+      btn.disabled = true;
+      ldr.classList.remove('hidden');
 
-    function switchView(viewId) {
-      document.querySelectorAll(".view").forEach(v => v.classList.remove("active"));
-      document.getElementById(viewId).classList.add("active");
-    }
-
-    // ============================================================
-    //  LOGIN
-    // ============================================================
-    async function doLogin() {
-      const dni = document.getElementById("input-dni").value.trim();
-      const errEl = document.getElementById("login-error");
-      errEl.textContent = "";
-
-      if (!dni) { errEl.textContent = "⚠ Ingresa tu DNI."; return; }
-
-      setLoading("btn-login", true);
       try {
-        const data = await callAPI({ accion: "login", dni });
-        if (!data.ok) { errEl.textContent = `⚠ ${data.error}`; return; }
-
-        SESSION.nombre = data.nombre;
-
-        // Actualizar header
-        document.getElementById("nombre-header").textContent = data.nombre;
-        document.getElementById("user-display").style.display = "block";
-        document.getElementById("btn-logout").style.display = "block";
-
-        // Guardar sesión
-        try { localStorage.setItem("olt_session", data.nombre); } catch(_) {}
-
-        // Cargar motivos e historial en paralelo
-        await Promise.all([cargarMotivos(), cargarHistorial()]);
-        switchView("view-main");
-
-      } catch (err) {
-        errEl.textContent = `⚠ Error de conexión: ${err.message}`;
+        const res  = await fetch(API, { method: 'POST', body: JSON.stringify({ action: 'login', dni, token: TOKEN }) });
+        const data = await res.json();
+        if (data.status === 'success') {
+          user.nombre = data.nombre;
+          mostrarApp();
+        } else {
+          errEl.textContent = '⚠ DNI no registrado en el sistema.';
+        }
+      } catch {
+        errEl.textContent = '⚠ Error de conexión. Intenta de nuevo.';
       } finally {
-        setLoading("btn-login", false);
+        btn.disabled = false;
+        ldr.classList.add('hidden');
       }
     }
 
-    function logout() {
-      try { localStorage.removeItem("olt_session"); } catch(_) {}
-      SESSION = { nombre: null, historial: [], ultimoCargo: null, ultimaFecha: null, motivosMap: {} };
-      document.getElementById("user-display").style.display = "none";
-      document.getElementById("btn-logout").style.display = "none";
-      document.getElementById("input-dni").value = "";
-      document.getElementById("login-error").textContent = "";
-      switchView("view-login");
+    /* ── MOSTRAR APP ── */
+    async function mostrarApp() {
+      document.getElementById('loginPage').classList.add('hidden');
+      document.getElementById('appPage').classList.remove('hidden');
+      document.getElementById('uName').textContent = user.nombre;
+      document.getElementById('userAvatar').textContent = user.nombre.charAt(0).toUpperCase();
+
+      const res  = await fetch(API, { method: 'POST', body: JSON.stringify({ action: 'getMotivos', token: TOKEN }) });
+      const data = await res.json();
+      motivosData = data.lista || [];
+      document.getElementById('motivo').innerHTML = motivosData
+        .map(m => `<option value="${m.motivo}">${m.motivo}</option>`).join('');
+
+      cargarHistorial();
     }
 
-    // ============================================================
-    //  CARGAR MOTIVOS
-    // ============================================================
-    async function cargarMotivos() {
-      const data = await callAPI({ accion: "getMotivos" });
-      if (!data.ok) return;
+    /* ── GENERAR ── */
+    async function generar() {
+      const motivoSel = document.getElementById('motivo').value;
+      const detalle   = document.getElementById('detalle').value.trim();
+      const errEl     = document.getElementById('formErr');
+      errEl.textContent = '';
 
-      const sel = document.getElementById("select-motivo");
-      sel.innerHTML = '<option value="">— Selecciona un motivo —</option>';
+      if (!motivoSel) { errEl.textContent = 'Selecciona un motivo.'; return; }
 
-      data.motivos.forEach(m => {
-        SESSION.motivosMap[m.motivo] = m.asociado;
-        const opt = document.createElement("option");
-        opt.value = m.motivo;
-        opt.textContent = m.motivo;
-        sel.appendChild(opt);
+      const info = motivosData.find(m => m.motivo === motivoSel);
+      const btn  = document.getElementById('btnG');
+      const txt  = document.getElementById('btnGText');
+      const ldr  = document.getElementById('btnLoader');
+      btn.disabled = true;
+      txt.textContent = 'Generando…';
+      ldr.classList.remove('hidden');
+
+      try {
+        const res  = await fetch(API, {
+          method: 'POST',
+          body: JSON.stringify({
+            action: 'registrar', token: TOKEN,
+            nombre: user.nombre,
+            motivo: motivoSel,
+            asociadoMotivo: info ? info.asociado : '',
+            detalle
+          })
+        });
+        const data = await res.json();
+
+        if (data.status === 'success') {
+          const el = document.getElementById('newId');
+          el.textContent  = data.id;
+          el.dataset.copy = `${data.id}\t${data.fecha}`;
+
+          document.getElementById('resCard').classList.remove('hidden');
+          document.getElementById('copyLabel').textContent = 'Copiar para Excel';
+          document.getElementById('detalle').value = '';
+
+          showToast(`Cargo ${data.id} registrado`);
+          cargarHistorial(data.id);
+        } else {
+          errEl.textContent = '⚠ ' + (data.message || 'Error al registrar.');
+        }
+      } catch {
+        errEl.textContent = '⚠ Error de conexión.';
+      } finally {
+        btn.disabled = false;
+        txt.textContent = 'Generar Cargo';
+        ldr.classList.add('hidden');
+      }
+    }
+
+    /* ── HISTORIAL ── */
+    async function cargarHistorial(newId = null) {
+      const res  = await fetch(API, {
+        method: 'POST',
+        body: JSON.stringify({ action: 'getHistorialCompleto', nombre: user.nombre, token: TOKEN })
       });
-    }
+      const data = await res.json();
+      const rows = data.datos || [];
 
-    // ============================================================
-    //  CARGAR HISTORIAL
-    // ============================================================
-    async function cargarHistorial() {
-      const data = await callAPI({ accion: "getHistorialCompleto", nombre: SESSION.nombre });
-      if (!data.ok) return;
+      document.getElementById('countBadge').textContent =
+        `${rows.length} registro${rows.length !== 1 ? 's' : ''}`;
 
-      SESSION.historial = data.historial;
-      renderHistorial(SESSION.historial, null);
-    }
+      const tabla = document.getElementById('histTable');
+      const empty = document.getElementById('noData');
+      const tbody = document.getElementById('histBody');
 
-    function renderHistorial(filas, newID) {
-      const tbody   = document.getElementById("tbody-historial");
-      const tabla   = document.getElementById("tabla-historial");
-      const empty   = document.getElementById("empty-state");
-      const badge   = document.getElementById("count-badge");
-
-      badge.textContent = filas.length;
-
-      if (filas.length === 0) {
-        tabla.style.display = "none";
-        empty.style.display = "flex";
+      if (rows.length === 0) {
+        tabla.style.display = 'none';
+        empty.style.display = 'flex';
         return;
       }
 
-      tabla.style.display = "table";
-      empty.style.display = "none";
-      tbody.innerHTML = "";
+      tabla.style.display = 'table';
+      empty.style.display = 'none';
 
-      filas.forEach(f => {
-        const tr = document.createElement("tr");
-        if (f.nCargo === newID) tr.classList.add("new-row");
+      tbody.innerHTML = rows.map(i => {
+        const fecha = i.fecha ? new Date(i.fecha).toLocaleDateString('es-PE') : '—';
+        const det   = (i.detalle || '').length > 50
+          ? i.detalle.slice(0, 50) + '…' : (i.detalle || '—');
+        const isNew = i.id === newId ? 'row-new' : '';
+        return `
+          <tr class="${isNew}">
+            <td class="col-id">${i.id}</td>
+            <td class="col-fecha">${fecha}</td>
+            <td class="col-motivo">${i.motivo}</td>
+            <td class="col-detalle" title="${i.detalle || ''}">${det}</td>
+            <td class="col-cuenta">${i.cuenta || '—'}</td>
+          </tr>`;
+      }).join('');
+    }
 
-        const det = f.detalle.length > 60 ? f.detalle.slice(0, 60) + "…" : f.detalle;
-
-        tr.innerHTML = `
-          <td class="td-cargo">${esc(f.nCargo)}</td>
-          <td class="td-fecha">${esc(f.fecha)}</td>
-          <td class="td-motivo">${esc(f.motivo)}</td>
-          <td class="td-detalle" title="${esc(f.detalle)}">${esc(det)}</td>
-          <td class="td-asociado">${esc(f.asociado)}</td>
-        `;
-        tbody.appendChild(tr);
+    /* ── COPIAR ── */
+    function copiar() {
+      const el = document.getElementById('newId');
+      navigator.clipboard.writeText(el.dataset.copy).then(() => {
+        document.getElementById('copyLabel').textContent = '¡ Copiado !';
+        showToast('ID y Fecha copiados al portapapeles');
+        setTimeout(() => {
+          document.getElementById('copyLabel').textContent = 'Copiar para Excel';
+        }, 2500);
       });
     }
-
-    function esc(s) {
-      return String(s || "")
-        .replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;")
-        .replace(/"/g,"&quot;");
-    }
-
-    // ============================================================
-    //  REGISTRAR
-    // ============================================================
-    async function doRegistrar() {
-      const motivo  = document.getElementById("select-motivo").value.trim();
-      const detalle = document.getElementById("textarea-detalle").value.trim();
-      const errEl   = document.getElementById("form-error");
-      errEl.textContent = "";
-
-      if (!motivo)  { errEl.textContent = "⚠ Selecciona un motivo."; return; }
-      if (!detalle) { errEl.textContent = "⚠ El detalle no puede estar vacío."; return; }
-
-      const asociado = SESSION.motivosMap[motivo] || "";
-
-      setLoading("btn-registrar", true);
-      try {
-        const data = await callAPI({
-          accion: "registrar",
-          motivo, detalle, asociado,
-          nombre: SESSION.nombre
-        });
-
-        if (!data.ok) { errEl.textContent = `⚠ ${data.error}`; return; }
-
-        SESSION.ultimoCargo = data.nuevoID;
-        SESSION.ultimaFecha = data.fecha;
-
-        // Mostrar resultado
-        document.getElementById("resultado-id").textContent   = data.nuevoID;
-        document.getElementById("resultado-fecha").textContent = data.fecha;
-        document.getElementById("resultado-box").style.display = "block";
-        document.getElementById("copy-label").textContent = "COPIAR PARA EXCEL";
-        document.getElementById("btn-copy").classList.remove("copied");
-
-        // Limpiar formulario
-        document.getElementById("select-motivo").value = "";
-        document.getElementById("textarea-detalle").value = "";
-
-        // Actualizar historial
-        SESSION.historial.unshift({
-          nCargo: data.nuevoID, fecha: data.fecha, motivo, detalle, asociado
-        });
-        renderHistorial(SESSION.historial, data.nuevoID);
-
-        showToast(`Cargo ${data.nuevoID} registrado ✓`, "ok");
-
-      } catch (err) {
-        errEl.textContent = `⚠ Error: ${err.message}`;
-        showToast("Error al registrar", "err");
-      } finally {
-        setLoading("btn-registrar", false);
-      }
-    }
-
-    // ============================================================
-    //  COPIAR AL PORTAPAPELES (formato para Excel: ID\tFECHA)
-    // ============================================================
-    async function copiarCargo() {
-      if (!SESSION.ultimoCargo) return;
-
-      // \t crítico para separar en dos columnas al pegar en Excel
-      const texto = `${SESSION.ultimoCargo}\t${SESSION.ultimaFecha}`;
-
-      try {
-        await navigator.clipboard.writeText(texto);
-        const label = document.getElementById("copy-label");
-        const btn   = document.getElementById("btn-copy");
-        label.textContent = "¡ COPIADO !";
-        btn.classList.add("copied");
-        setTimeout(() => {
-          label.textContent = "COPIAR PARA EXCEL";
-          btn.classList.remove("copied");
-        }, 2500);
-        showToast("Copiado al portapapeles ✓", "ok");
-      } catch {
-        showToast("No se pudo copiar", "err");
-      }
-    }
-
-    // ============================================================
-    //  PERSISTENCIA DE SESIÓN (localStorage)
-    // ============================================================
-    (async function autoLogin() {
-      try {
-        const saved = localStorage.getItem("olt_session");
-        if (saved) {
-          SESSION.nombre = saved;
-          document.getElementById("nombre-header").textContent = saved;
-          document.getElementById("user-display").style.display = "block";
-          document.getElementById("btn-logout").style.display = "block";
-          await Promise.all([cargarMotivos(), cargarHistorial()]);
-          switchView("view-main");
-        }
-      } catch(_) {}
-    })();
   </script>
-
 </body>
 </html>
