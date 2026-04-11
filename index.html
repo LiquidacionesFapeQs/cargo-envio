@@ -1,182 +1,892 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sistema de Control OLT</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <style>
-        .custom-scroll::-webkit-scrollbar { width: 6px; }
-        .custom-scroll::-webkit-scrollbar-track { background: #f1f1f1; }
-        .custom-scroll::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
-        .loader { border-top-color: #ffffff; animation: spinner 0.6s linear infinite; }
-        @keyframes spinner { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-    </style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Sistema de Cargos OLT</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Barlow:wght@400;500;600;700;900&display=swap" rel="stylesheet" />
+
+  <style>
+    /* ─── VARIABLES ─────────────────────────────────────────── */
+    :root {
+      --bg:        #0d0f12;
+      --surface:   #13161b;
+      --border:    #252830;
+      --accent:    #00d4ff;
+      --accent2:   #ff6b35;
+      --text:      #d8dce6;
+      --muted:     #5a6070;
+      --success:   #2ecc71;
+      --danger:    #e74c3c;
+      --mono:      'Share Tech Mono', monospace;
+      --sans:      'Barlow', sans-serif;
+    }
+
+    /* ─── RESET & BASE ──────────────────────────────────────── */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: var(--sans);
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      overflow-x: hidden;
+    }
+
+    /* ─── NOISE OVERLAY ─────────────────────────────────────── */
+    body::before {
+      content: '';
+      position: fixed; inset: 0;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");
+      pointer-events: none;
+      z-index: 999;
+      opacity: 0.5;
+    }
+
+    /* ─── HEADER ────────────────────────────────────────────── */
+    header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 28px;
+      height: 56px;
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+      position: sticky; top: 0; z-index: 100;
+    }
+
+    .logo {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      font-family: var(--mono);
+      font-size: 13px;
+      letter-spacing: 0.12em;
+      color: var(--accent);
+    }
+
+    .logo-badge {
+      width: 28px; height: 28px;
+      background: var(--accent);
+      color: #000;
+      font-weight: 900;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 11px;
+      clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%);
+    }
+
+    .header-right {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+
+    #user-display {
+      font-family: var(--mono);
+      font-size: 12px;
+      color: var(--muted);
+      display: none;
+    }
+
+    #user-display span { color: var(--accent); }
+
+    .btn-logout {
+      font-family: var(--mono);
+      font-size: 11px;
+      letter-spacing: 0.08em;
+      background: none;
+      border: 1px solid var(--border);
+      color: var(--muted);
+      padding: 5px 12px;
+      cursor: pointer;
+      transition: all .2s;
+      display: none;
+    }
+    .btn-logout:hover { border-color: var(--danger); color: var(--danger); }
+
+    /* ─── VIEWS ─────────────────────────────────────────────── */
+    .view { display: none; flex: 1; }
+    .view.active { display: flex; }
+
+    /* ─── LOGIN VIEW ────────────────────────────────────────── */
+    #view-login {
+      align-items: center;
+      justify-content: center;
+      flex-direction: column;
+      background:
+        radial-gradient(ellipse 60% 50% at 50% 50%, rgba(0,212,255,.05) 0%, transparent 70%);
+    }
+
+    .login-box {
+      width: 360px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      padding: 40px 36px;
+      position: relative;
+    }
+
+    .login-box::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 2px;
+      background: linear-gradient(90deg, transparent, var(--accent), transparent);
+    }
+
+    .login-title {
+      font-family: var(--mono);
+      font-size: 11px;
+      letter-spacing: 0.2em;
+      color: var(--accent);
+      margin-bottom: 8px;
+      text-transform: uppercase;
+    }
+
+    .login-subtitle {
+      font-size: 22px;
+      font-weight: 700;
+      color: var(--text);
+      margin-bottom: 32px;
+      line-height: 1.2;
+    }
+
+    .field-group { margin-bottom: 20px; }
+
+    label {
+      display: block;
+      font-family: var(--mono);
+      font-size: 10px;
+      letter-spacing: 0.15em;
+      color: var(--muted);
+      margin-bottom: 8px;
+      text-transform: uppercase;
+    }
+
+    input, select, textarea {
+      width: 100%;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      color: var(--text);
+      font-family: var(--sans);
+      font-size: 14px;
+      padding: 10px 14px;
+      outline: none;
+      transition: border-color .2s;
+      appearance: none;
+    }
+
+    input:focus, select:focus, textarea:focus {
+      border-color: var(--accent);
+    }
+
+    select {
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' fill='%235a6070' viewBox='0 0 16 16'%3E%3Cpath d='M7.247 11.14L2.451 5.658C1.885 5.013 2.345 4 3.204 4h9.592a1 1 0 0 1 .753 1.659l-4.796 5.48a1 1 0 0 1-1.506 0z'/%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-position: right 14px center;
+      padding-right: 36px;
+      cursor: pointer;
+    }
+
+    textarea { resize: vertical; min-height: 80px; line-height: 1.5; }
+
+    /* Botón primario */
+    .btn-primary {
+      width: 100%;
+      padding: 12px;
+      background: var(--accent);
+      color: #000;
+      font-family: var(--mono);
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 0.15em;
+      border: none;
+      cursor: pointer;
+      text-transform: uppercase;
+      transition: all .2s;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .btn-primary:hover { background: #33ddff; }
+    .btn-primary:active { transform: scale(0.99); }
+    .btn-primary:disabled { background: var(--border); color: var(--muted); cursor: not-allowed; }
+
+    .btn-primary .spinner {
+      display: none;
+      width: 14px; height: 14px;
+      border: 2px solid rgba(0,0,0,.3);
+      border-top-color: #000;
+      border-radius: 50%;
+      animation: spin .6s linear infinite;
+      margin: 0 auto;
+    }
+
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    .btn-primary.loading .btn-text { display: none; }
+    .btn-primary.loading .spinner { display: block; }
+
+    /* Mensaje de error */
+    .msg-error {
+      font-family: var(--mono);
+      font-size: 11px;
+      color: var(--danger);
+      margin-top: 12px;
+      min-height: 16px;
+      text-align: center;
+      letter-spacing: 0.05em;
+    }
+
+    /* ─── MAIN VIEW (SPLIT) ─────────────────────────────────── */
+    #view-main {
+      flex-direction: row;
+      height: calc(100vh - 56px);
+      overflow: hidden;
+    }
+
+    /* ─── PANEL IZQUIERDO (FORMULARIO) ──────────────────────── */
+    .panel-left {
+      width: 380px;
+      min-width: 320px;
+      flex-shrink: 0;
+      background: var(--surface);
+      border-right: 1px solid var(--border);
+      display: flex;
+      flex-direction: column;
+      overflow-y: auto;
+    }
+
+    .panel-header {
+      padding: 20px 24px 16px;
+      border-bottom: 1px solid var(--border);
+      position: sticky; top: 0;
+      background: var(--surface);
+      z-index: 10;
+    }
+
+    .panel-label {
+      font-family: var(--mono);
+      font-size: 9px;
+      letter-spacing: 0.25em;
+      color: var(--accent);
+      text-transform: uppercase;
+      margin-bottom: 4px;
+    }
+
+    .panel-title {
+      font-size: 16px;
+      font-weight: 700;
+      color: var(--text);
+    }
+
+    .panel-body { padding: 24px; flex: 1; }
+
+    /* RESULTADO generado */
+    #resultado-box {
+      display: none;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-left: 3px solid var(--success);
+      padding: 16px;
+      margin-bottom: 20px;
+    }
+
+    .resultado-label {
+      font-family: var(--mono);
+      font-size: 9px;
+      letter-spacing: 0.2em;
+      color: var(--muted);
+      text-transform: uppercase;
+      margin-bottom: 6px;
+    }
+
+    .resultado-id {
+      font-family: var(--mono);
+      font-size: 20px;
+      color: var(--success);
+      letter-spacing: 0.05em;
+      margin-bottom: 4px;
+    }
+
+    .resultado-fecha {
+      font-family: var(--mono);
+      font-size: 12px;
+      color: var(--muted);
+    }
+
+    /* Botón copiar */
+    .btn-copy {
+      width: 100%;
+      margin-top: 12px;
+      padding: 9px;
+      background: none;
+      border: 1px solid var(--success);
+      color: var(--success);
+      font-family: var(--mono);
+      font-size: 11px;
+      letter-spacing: 0.12em;
+      cursor: pointer;
+      text-transform: uppercase;
+      transition: all .2s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+    }
+
+    .btn-copy:hover { background: rgba(46,204,113,.1); }
+    .btn-copy.copied { border-color: var(--accent); color: var(--accent); }
+
+    /* ─── PANEL DERECHO (HISTORIAL) ─────────────────────────── */
+    .panel-right {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+
+    .table-container {
+      flex: 1;
+      overflow-y: auto;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+
+    thead {
+      position: sticky; top: 0;
+      background: var(--surface);
+      z-index: 5;
+    }
+
+    th {
+      padding: 14px 16px;
+      text-align: left;
+      font-family: var(--mono);
+      font-size: 9px;
+      letter-spacing: 0.2em;
+      color: var(--muted);
+      text-transform: uppercase;
+      border-bottom: 1px solid var(--border);
+      white-space: nowrap;
+    }
+
+    td {
+      padding: 13px 16px;
+      font-size: 13px;
+      border-bottom: 1px solid rgba(37,40,48,.6);
+      vertical-align: middle;
+      transition: background .15s;
+    }
+
+    tr:hover td { background: rgba(255,255,255,.015); }
+
+    .td-cargo {
+      font-family: var(--mono);
+      font-size: 12px;
+      color: var(--accent);
+      letter-spacing: 0.04em;
+    }
+
+    .td-fecha {
+      font-family: var(--mono);
+      font-size: 11px;
+      color: var(--muted);
+      white-space: nowrap;
+    }
+
+    .td-motivo {
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--text);
+    }
+
+    .td-detalle {
+      font-size: 12px;
+      color: var(--muted);
+      max-width: 280px;
+    }
+
+    .td-asociado {
+      font-family: var(--mono);
+      font-size: 10px;
+      color: var(--accent2);
+      letter-spacing: 0.06em;
+    }
+
+    /* Fila nueva resaltada */
+    tr.new-row td {
+      animation: highlight 2.5s ease-out forwards;
+    }
+
+    @keyframes highlight {
+      0%   { background: rgba(0,212,255,.15); }
+      100% { background: transparent; }
+    }
+
+    /* Estado vacío */
+    .empty-state {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 80px 32px;
+      gap: 12px;
+    }
+
+    .empty-icon {
+      width: 48px; height: 48px;
+      border: 2px solid var(--border);
+      border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      color: var(--muted);
+      font-size: 20px;
+      margin-bottom: 4px;
+    }
+
+    .empty-text {
+      font-family: var(--mono);
+      font-size: 11px;
+      color: var(--muted);
+      letter-spacing: 0.1em;
+      text-align: center;
+    }
+
+    /* ─── SCROLLBAR ─────────────────────────────────────────── */
+    ::-webkit-scrollbar { width: 4px; height: 4px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+    ::-webkit-scrollbar-thumb:hover { background: var(--muted); }
+
+    /* ─── TOAST ─────────────────────────────────────────────── */
+    #toast {
+      position: fixed;
+      bottom: 28px; right: 28px;
+      padding: 10px 18px;
+      font-family: var(--mono);
+      font-size: 11px;
+      letter-spacing: 0.1em;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      color: var(--text);
+      z-index: 9999;
+      opacity: 0;
+      transform: translateY(10px);
+      transition: all .25s;
+      pointer-events: none;
+    }
+
+    #toast.show { opacity: 1; transform: translateY(0); }
+    #toast.toast-ok   { border-color: var(--success); color: var(--success); }
+    #toast.toast-err  { border-color: var(--danger);  color: var(--danger); }
+
+    /* ─── COUNTER BADGE ─────────────────────────────────────── */
+    .count-badge {
+      background: var(--border);
+      color: var(--muted);
+      font-family: var(--mono);
+      font-size: 10px;
+      padding: 2px 8px;
+      margin-left: 8px;
+    }
+
+    /* ─── RESPONSIVE ────────────────────────────────────────── */
+    @media (max-width: 768px) {
+      #view-main { flex-direction: column; height: auto; overflow: auto; }
+      .panel-left { width: 100%; min-width: unset; border-right: none; border-bottom: 1px solid var(--border); }
+      .panel-right { min-height: 400px; }
+    }
+  </style>
 </head>
-<body class="bg-slate-50 min-h-screen font-sans text-slate-900">
+<body>
 
-    <div id="loginPage" class="flex items-center justify-center min-h-screen p-6">
-        <div class="bg-white p-8 rounded-2xl shadow-xl w-full max-w-sm border border-slate-200">
-            <h2 class="text-xl font-bold text-center mb-6">Acceso al Sistema</h2>
-            <input type="number" id="dni" placeholder="DNI" class="w-full p-3 border rounded-xl mb-4 text-center text-lg outline-none focus:ring-2 focus:ring-indigo-500">
-            <button onclick="login()" id="btnLogin" class="w-full bg-indigo-600 text-white py-3 rounded-xl font-bold hover:bg-indigo-700 transition-all">ENTRAR</button>
+  <!-- ─── HEADER ─────────────────────────────────────────────── -->
+  <header>
+    <div class="logo">
+      <div class="logo-badge">OLT</div>
+      SISTEMA DE CARGOS
+    </div>
+    <div class="header-right">
+      <div id="user-display">SESIÓN: <span id="nombre-header"></span></div>
+      <button class="btn-logout" id="btn-logout" onclick="logout()">[ SALIR ]</button>
+    </div>
+  </header>
+
+  <!-- ─── VIEW: LOGIN ─────────────────────────────────────────── -->
+  <div class="view active" id="view-login">
+    <div class="login-box">
+      <p class="login-title">// Autenticación requerida</p>
+      <h1 class="login-subtitle">Ingresa tu<br/>número de DNI</h1>
+
+      <div class="field-group">
+        <label for="input-dni">DNI</label>
+        <input type="text" id="input-dni" placeholder="Ej: 71234567" maxlength="12"
+               onkeydown="if(event.key==='Enter') doLogin()" />
+      </div>
+
+      <button class="btn-primary" id="btn-login" onclick="doLogin()">
+        <div class="btn-text">INGRESAR</div>
+        <div class="spinner"></div>
+      </button>
+
+      <p class="msg-error" id="login-error"></p>
+    </div>
+  </div>
+
+  <!-- ─── VIEW: MAIN ──────────────────────────────────────────── -->
+  <div class="view" id="view-main">
+
+    <!-- Panel Izquierdo: Formulario -->
+    <aside class="panel-left">
+      <div class="panel-header">
+        <p class="panel-label">// Nuevo registro</p>
+        <h2 class="panel-title">Generar Cargo</h2>
+      </div>
+
+      <div class="panel-body">
+
+        <!-- Resultado del último cargo generado -->
+        <div id="resultado-box">
+          <p class="resultado-label">// Cargo generado</p>
+          <p class="resultado-id" id="resultado-id">—</p>
+          <p class="resultado-fecha" id="resultado-fecha"></p>
+          <button class="btn-copy" id="btn-copy" onclick="copiarCargo()">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>
+            </svg>
+            <span id="copy-label">COPIAR PARA EXCEL</span>
+          </button>
         </div>
-    </div>
 
-    <div id="appPage" class="hidden h-screen flex flex-col">
-        <header class="bg-white border-b px-6 py-3 flex justify-between items-center shadow-sm">
-            <div class="flex items-center gap-4">
-                <span class="bg-indigo-600 text-white px-3 py-1 rounded-md text-xs font-bold">OLT</span>
-                <h1 id="uName" class="font-bold text-slate-700">---</h1>
-            </div>
-            <button onclick="location.reload()" class="text-slate-400 hover:text-red-500 text-sm font-medium">Cerrar Sesión</button>
-        </header>
+        <!-- Formulario -->
+        <div class="field-group">
+          <label for="select-motivo">Motivo</label>
+          <select id="select-motivo">
+            <option value="">— Selecciona un motivo —</option>
+          </select>
+        </div>
 
-        <main class="flex flex-1 overflow-hidden">
-            <div class="w-1/3 p-6 border-r bg-white overflow-y-auto">
-                <h3 class="text-sm font-bold text-slate-400 uppercase tracking-wider mb-6">Generar Nuevo Cargo</h3>
-                
-                <div class="space-y-5">
-                    <div>
-                        <label class="block text-xs font-bold mb-2 text-slate-600">Motivo (Aux A)</label>
-                        <select id="motivo" class="w-full p-2.5 bg-slate-50 border rounded-lg text-sm font-medium outline-none focus:border-indigo-500">
-                            <option>Cargando...</option>
-                        </select>
-                    </div>
+        <div class="field-group">
+          <label for="textarea-detalle">Detalle</label>
+          <textarea id="textarea-detalle" rows="5" placeholder="Describe el motivo del cargo..."></textarea>
+        </div>
 
-                    <div>
-                        <label class="block text-xs font-bold mb-2 text-slate-600">Detalle Adicional (Col E)</label>
-                        <textarea id="detalle" rows="3" placeholder="Información extra..." class="w-full p-2.5 bg-slate-50 border rounded-lg text-sm outline-none focus:border-indigo-500 resize-none"></textarea>
-                    </div>
+        <button class="btn-primary" id="btn-registrar" onclick="doRegistrar()">
+          <div class="btn-text">REGISTRAR CARGO</div>
+          <div class="spinner"></div>
+        </button>
 
-                    <button onclick="generar()" id="btnG" class="w-full bg-emerald-600 text-white py-3 rounded-xl font-bold text-sm hover:bg-emerald-700 shadow-md active:scale-95 transition-all flex items-center justify-center gap-2">
-                        <span>GENERAR CARGO</span>
-                        <div id="btnLoader" class="loader rounded-full border-2 border-t-2 border-white h-4 w-4 hidden"></div>
-                    </button>
+        <p class="msg-error" id="form-error"></p>
 
-                    <div id="resCard" class="hidden bg-amber-50 border border-amber-200 p-4 rounded-xl space-y-3">
-                        <div class="flex justify-between items-start">
-                            <div>
-                                <p class="text-[10px] font-bold text-amber-600 uppercase">Cargo Generado</p>
-                                <p id="newId" class="text-lg font-black text-amber-900"></p>
-                            </div>
-                            <button onclick="copiar()" class="bg-amber-600 text-white px-4 py-2 rounded-lg text-xs font-bold hover:bg-amber-700">COPIAR</button>
-                        </div>
-                    </div>
-                </div>
-            </div>
+      </div>
+    </aside>
 
-            <div class="w-2/3 bg-slate-50 p-6 overflow-hidden flex flex-col">
-                <h3 class="text-sm font-bold text-slate-400 uppercase tracking-wider mb-6">Mi Historial Reciente</h3>
-                
-                <div class="bg-white border rounded-xl flex-1 overflow-hidden flex flex-col">
-                    <div class="overflow-x-auto custom-scroll">
-                        <table class="w-full text-left border-collapse">
-                            <thead class="bg-slate-50 sticky top-0 border-b">
-                                <tr>
-                                    <th class="p-3 text-[10px] font-bold text-slate-500 uppercase">N° Cargo</th>
-                                    <th class="p-3 text-[10px] font-bold text-slate-500 uppercase">Fecha</th>
-                                    <th class="p-3 text-[10px] font-bold text-slate-500 uppercase">Motivo</th>
-                                    <th class="p-3 text-[10px] font-bold text-slate-500 uppercase">Detalle</th>
-                                    <th class="p-3 text-[10px] font-bold text-slate-500 uppercase text-right">Cuenta</th>
-                                </tr>
-                            </thead>
-                            <tbody id="histTable" class="text-xs divide-y">
-                                </tbody>
-                        </table>
-                    </div>
-                    <div id="noData" class="hidden p-10 text-center text-slate-400 text-sm">No hay registros hoy.</div>
-                </div>
-            </div>
-        </main>
-    </div>
+    <!-- Panel Derecho: Historial -->
+    <section class="panel-right">
+      <div class="panel-header" style="padding: 20px 24px;">
+        <p class="panel-label">// Mis registros</p>
+        <h2 class="panel-title">
+          Historial
+          <span class="count-badge" id="count-badge">0</span>
+        </h2>
+      </div>
 
-    <script>
-        const API = "https://script.google.com/macros/s/AKfycbwLiusbmJz_zpYOI987X6GxqABYA9MEwljIwTV3O41TOnI2xRZCrMTwN-gNe2SxdZu7/exec"; 
-        const TOKEN = "generarcargo-0410";
-        let user = { nombre: "" };
-        let motivosData = [];
+      <div class="table-container" id="table-container">
+        <div class="empty-state" id="empty-state">
+          <div class="empty-icon">◈</div>
+          <p class="empty-text">SIN REGISTROS<br/>PARA ESTE USUARIO</p>
+        </div>
+        <table id="tabla-historial" style="display:none">
+          <thead>
+            <tr>
+              <th>N° Cargo</th>
+              <th>Fecha</th>
+              <th>Motivo</th>
+              <th>Detalle</th>
+              <th>Asociado</th>
+            </tr>
+          </thead>
+          <tbody id="tbody-historial"></tbody>
+        </table>
+      </div>
+    </section>
 
-        async function login() {
-            const dni = document.getElementById('dni').value;
-            if(!dni) return;
-            const res = await fetch(API, {method:'POST', body: JSON.stringify({action:'login', dni:dni, token:TOKEN})});
-            const data = await res.json();
-            if(data.status === 'success') {
-                user.nombre = data.nombre;
-                mostrarApp();
-            } else { alert("DNI no registrado"); }
+  </div>
+
+  <!-- ─── TOAST ───────────────────────────────────────────────── -->
+  <div id="toast"></div>
+
+  <!-- ─────────────────────────────────────────────────────────── -->
+  <script>
+    // ============================================================
+    //  CONFIGURACIÓN — EDITAR ANTES DE DESPLEGAR
+    // ============================================================
+    const GAS_URL       = "https://script.google.com/macros/s/AKfycbxb8yWZ9Ulw6ELjHYY1mwUIO6DNDvWallPK6EDgoJMF1DGSKrnDhYMfZbHTSukH8E8_/exec";  // ← URL del Web App GAS
+    const TOKEN_SISTEMA = "OLT-TOKEN-2025";                   // ← Debe coincidir con Codigo.gs
+
+    // ============================================================
+    //  ESTADO
+    // ============================================================
+    let SESSION = {
+      nombre  : null,
+      historial: [],
+      ultimoCargo: null,
+      ultimaFecha: null,
+      motivosMap: {}   // motivo → asociado
+    };
+
+    // ============================================================
+    //  UTILIDADES
+    // ============================================================
+    async function callAPI(payload) {
+      const resp = await fetch(GAS_URL, {
+        method : "POST",
+        body   : JSON.stringify({ token: TOKEN_SISTEMA, ...payload }),
+        headers: { "Content-Type": "application/json" }
+      });
+      if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
+      return resp.json();
+    }
+
+    function showToast(msg, tipo = "ok") {
+      const t = document.getElementById("toast");
+      t.textContent = msg;
+      t.className = `show toast-${tipo}`;
+      clearTimeout(t._timer);
+      t._timer = setTimeout(() => { t.className = ""; }, 3000);
+    }
+
+    function setLoading(btnId, loading) {
+      const btn = document.getElementById(btnId);
+      if (loading) btn.classList.add("loading");
+      else btn.classList.remove("loading");
+      btn.disabled = loading;
+    }
+
+    function switchView(viewId) {
+      document.querySelectorAll(".view").forEach(v => v.classList.remove("active"));
+      document.getElementById(viewId).classList.add("active");
+    }
+
+    // ============================================================
+    //  LOGIN
+    // ============================================================
+    async function doLogin() {
+      const dni = document.getElementById("input-dni").value.trim();
+      const errEl = document.getElementById("login-error");
+      errEl.textContent = "";
+
+      if (!dni) { errEl.textContent = "⚠ Ingresa tu DNI."; return; }
+
+      setLoading("btn-login", true);
+      try {
+        const data = await callAPI({ accion: "login", dni });
+        if (!data.ok) { errEl.textContent = `⚠ ${data.error}`; return; }
+
+        SESSION.nombre = data.nombre;
+
+        // Actualizar header
+        document.getElementById("nombre-header").textContent = data.nombre;
+        document.getElementById("user-display").style.display = "block";
+        document.getElementById("btn-logout").style.display = "block";
+
+        // Guardar sesión
+        try { localStorage.setItem("olt_session", data.nombre); } catch(_) {}
+
+        // Cargar motivos e historial en paralelo
+        await Promise.all([cargarMotivos(), cargarHistorial()]);
+        switchView("view-main");
+
+      } catch (err) {
+        errEl.textContent = `⚠ Error de conexión: ${err.message}`;
+      } finally {
+        setLoading("btn-login", false);
+      }
+    }
+
+    function logout() {
+      try { localStorage.removeItem("olt_session"); } catch(_) {}
+      SESSION = { nombre: null, historial: [], ultimoCargo: null, ultimaFecha: null, motivosMap: {} };
+      document.getElementById("user-display").style.display = "none";
+      document.getElementById("btn-logout").style.display = "none";
+      document.getElementById("input-dni").value = "";
+      document.getElementById("login-error").textContent = "";
+      switchView("view-login");
+    }
+
+    // ============================================================
+    //  CARGAR MOTIVOS
+    // ============================================================
+    async function cargarMotivos() {
+      const data = await callAPI({ accion: "getMotivos" });
+      if (!data.ok) return;
+
+      const sel = document.getElementById("select-motivo");
+      sel.innerHTML = '<option value="">— Selecciona un motivo —</option>';
+
+      data.motivos.forEach(m => {
+        SESSION.motivosMap[m.motivo] = m.asociado;
+        const opt = document.createElement("option");
+        opt.value = m.motivo;
+        opt.textContent = m.motivo;
+        sel.appendChild(opt);
+      });
+    }
+
+    // ============================================================
+    //  CARGAR HISTORIAL
+    // ============================================================
+    async function cargarHistorial() {
+      const data = await callAPI({ accion: "getHistorialCompleto", nombre: SESSION.nombre });
+      if (!data.ok) return;
+
+      SESSION.historial = data.historial;
+      renderHistorial(SESSION.historial, null);
+    }
+
+    function renderHistorial(filas, newID) {
+      const tbody   = document.getElementById("tbody-historial");
+      const tabla   = document.getElementById("tabla-historial");
+      const empty   = document.getElementById("empty-state");
+      const badge   = document.getElementById("count-badge");
+
+      badge.textContent = filas.length;
+
+      if (filas.length === 0) {
+        tabla.style.display = "none";
+        empty.style.display = "flex";
+        return;
+      }
+
+      tabla.style.display = "table";
+      empty.style.display = "none";
+      tbody.innerHTML = "";
+
+      filas.forEach(f => {
+        const tr = document.createElement("tr");
+        if (f.nCargo === newID) tr.classList.add("new-row");
+
+        const det = f.detalle.length > 60 ? f.detalle.slice(0, 60) + "…" : f.detalle;
+
+        tr.innerHTML = `
+          <td class="td-cargo">${esc(f.nCargo)}</td>
+          <td class="td-fecha">${esc(f.fecha)}</td>
+          <td class="td-motivo">${esc(f.motivo)}</td>
+          <td class="td-detalle" title="${esc(f.detalle)}">${esc(det)}</td>
+          <td class="td-asociado">${esc(f.asociado)}</td>
+        `;
+        tbody.appendChild(tr);
+      });
+    }
+
+    function esc(s) {
+      return String(s || "")
+        .replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;")
+        .replace(/"/g,"&quot;");
+    }
+
+    // ============================================================
+    //  REGISTRAR
+    // ============================================================
+    async function doRegistrar() {
+      const motivo  = document.getElementById("select-motivo").value.trim();
+      const detalle = document.getElementById("textarea-detalle").value.trim();
+      const errEl   = document.getElementById("form-error");
+      errEl.textContent = "";
+
+      if (!motivo)  { errEl.textContent = "⚠ Selecciona un motivo."; return; }
+      if (!detalle) { errEl.textContent = "⚠ El detalle no puede estar vacío."; return; }
+
+      const asociado = SESSION.motivosMap[motivo] || "";
+
+      setLoading("btn-registrar", true);
+      try {
+        const data = await callAPI({
+          accion: "registrar",
+          motivo, detalle, asociado,
+          nombre: SESSION.nombre
+        });
+
+        if (!data.ok) { errEl.textContent = `⚠ ${data.error}`; return; }
+
+        SESSION.ultimoCargo = data.nuevoID;
+        SESSION.ultimaFecha = data.fecha;
+
+        // Mostrar resultado
+        document.getElementById("resultado-id").textContent   = data.nuevoID;
+        document.getElementById("resultado-fecha").textContent = data.fecha;
+        document.getElementById("resultado-box").style.display = "block";
+        document.getElementById("copy-label").textContent = "COPIAR PARA EXCEL";
+        document.getElementById("btn-copy").classList.remove("copied");
+
+        // Limpiar formulario
+        document.getElementById("select-motivo").value = "";
+        document.getElementById("textarea-detalle").value = "";
+
+        // Actualizar historial
+        SESSION.historial.unshift({
+          nCargo: data.nuevoID, fecha: data.fecha, motivo, detalle, asociado
+        });
+        renderHistorial(SESSION.historial, data.nuevoID);
+
+        showToast(`Cargo ${data.nuevoID} registrado ✓`, "ok");
+
+      } catch (err) {
+        errEl.textContent = `⚠ Error: ${err.message}`;
+        showToast("Error al registrar", "err");
+      } finally {
+        setLoading("btn-registrar", false);
+      }
+    }
+
+    // ============================================================
+    //  COPIAR AL PORTAPAPELES (formato para Excel: ID\tFECHA)
+    // ============================================================
+    async function copiarCargo() {
+      if (!SESSION.ultimoCargo) return;
+
+      // \t crítico para separar en dos columnas al pegar en Excel
+      const texto = `${SESSION.ultimoCargo}\t${SESSION.ultimaFecha}`;
+
+      try {
+        await navigator.clipboard.writeText(texto);
+        const label = document.getElementById("copy-label");
+        const btn   = document.getElementById("btn-copy");
+        label.textContent = "¡ COPIADO !";
+        btn.classList.add("copied");
+        setTimeout(() => {
+          label.textContent = "COPIAR PARA EXCEL";
+          btn.classList.remove("copied");
+        }, 2500);
+        showToast("Copiado al portapapeles ✓", "ok");
+      } catch {
+        showToast("No se pudo copiar", "err");
+      }
+    }
+
+    // ============================================================
+    //  PERSISTENCIA DE SESIÓN (localStorage)
+    // ============================================================
+    (async function autoLogin() {
+      try {
+        const saved = localStorage.getItem("olt_session");
+        if (saved) {
+          SESSION.nombre = saved;
+          document.getElementById("nombre-header").textContent = saved;
+          document.getElementById("user-display").style.display = "block";
+          document.getElementById("btn-logout").style.display = "block";
+          await Promise.all([cargarMotivos(), cargarHistorial()]);
+          switchView("view-main");
         }
+      } catch(_) {}
+    })();
+  </script>
 
-        async function mostrarApp() {
-            document.getElementById('loginPage').classList.add('hidden');
-            document.getElementById('appPage').classList.remove('hidden');
-            document.getElementById('uName').innerText = user.nombre;
-            
-            // Cargar Motivos
-            const res = await fetch(API, {method:'POST', body: JSON.stringify({action:'getMotivos', token:TOKEN})});
-            const data = await res.json();
-            motivosData = data.lista;
-            document.getElementById('motivo').innerHTML = motivosData.map(m => `<option value="${m.motivo}">${m.motivo}</option>`).join('');
-            
-            cargarHistorial();
-        }
-
-        async function generar() {
-            const btn = document.getElementById('btnG');
-            const loader = document.getElementById('btnLoader');
-            const motivoSel = document.getElementById('motivo').value;
-            const info = motivosData.find(m => m.motivo === motivoSel);
-
-            btn.disabled = true; loader.classList.remove('hidden');
-
-            const res = await fetch(API, {method:'POST', body: JSON.stringify({
-                action: 'registrar',
-                token: TOKEN,
-                nombre: user.nombre,
-                motivo: motivoSel,
-                asociadoMotivo: info ? info.asociado : "",
-                detalle: document.getElementById('detalle').value
-            })});
-            
-            const data = await res.json();
-            if(data.status === 'success') {
-                const el = document.getElementById('newId');
-                el.innerText = data.id;
-                el.dataset.copy = `${data.id}\t${data.fecha}`;
-                document.getElementById('resCard').classList.remove('hidden');
-                document.getElementById('detalle').value = "";
-                cargarHistorial();
-            }
-            btn.disabled = false; loader.classList.add('hidden');
-        }
-
-        async function cargarHistorial() {
-            const res = await fetch(API, {method:'POST', body: JSON.stringify({action:'getHistorialCompleto', nombre:user.nombre, token:TOKEN})});
-            const data = await res.json();
-            const table = document.getElementById('histTable');
-            
-            if(data.datos && data.datos.length > 0) {
-                document.getElementById('noData').classList.add('hidden');
-                table.innerHTML = data.datos.map(i => `
-                    <tr class="hover:bg-slate-50 transition-colors">
-                        <td class="p-3 font-bold text-indigo-600">${i.id}</td>
-                        <td class="p-3 text-slate-500">${new Date(i.fecha).toLocaleDateString()}</td>
-                        <td class="p-3 font-medium">${i.motivo}</td>
-                        <td class="p-3 text-slate-400 italic">${i.detalle || '-'}</td>
-                        <td class="p-3 text-right font-bold text-slate-600">${i.cuenta || '-'}</td>
-                    </tr>
-                `).join('');
-            } else {
-                document.getElementById('noData').classList.remove('hidden');
-                table.innerHTML = "";
-            }
-        }
-
-        function copiar() {
-            navigator.clipboard.writeText(document.getElementById('newId').dataset.copy);
-            alert("Copiado: ID y Fecha");
-        }
-    </script>
 </body>
 </html>
